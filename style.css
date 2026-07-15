@@ -1,14 +1,14 @@
 :root{
 
---background:#080B12;
---surface:#101826;
---card:#182233;
+--bg:#070B14;
+--surface:#101827;
+--card:#182235;
 
 --primary:#4EA7FF;
---primary-hover:#6DB8FF;
+--primary-hover:#74BCFF;
 
---text:#FFFFFF;
---secondary:#AAB9CC;
+--text:#F8FAFC;
+--secondary:#AAB7CA;
 
 --gold:#FFD86B;
 
@@ -22,17 +22,29 @@ box-sizing:border-box;
 
 }
 
-body{
+html{
 
-font-family:"Inter",sans-serif;
-
-background:var(--background);
-
-color:var(--text);
+scroll-behavior:smooth;
 
 }
 
+body{
+
+background:var(--bg);
+
+color:var(--text);
+
+font-family:"Inter",sans-serif;
+
+}
+
+/* ---------- Navbar ---------- */
+
 .navbar{
+
+position:sticky;
+
+top:0;
 
 display:flex;
 
@@ -40,7 +52,13 @@ justify-content:space-between;
 
 align-items:center;
 
-padding:28px 10%;
+padding:22px 8%;
+
+background:rgba(7,11,20,.75);
+
+backdrop-filter:blur(18px);
+
+z-index:100;
 
 }
 
@@ -54,101 +72,117 @@ color:var(--primary);
 
 }
 
-nav{
+.desktop-nav{
 
-display:flex;
+display:none;
 
-gap:32px;
+gap:30px;
 
 }
 
-nav a{
-
-text-decoration:none;
+.desktop-nav a{
 
 color:var(--secondary);
+
+text-decoration:none;
 
 transition:.2s;
 
 }
 
-nav a:hover{
+.desktop-nav a:hover{
 
 color:white;
 
 }
 
+.menu-button{
+
+font-size:30px;
+
+background:none;
+
+border:none;
+
+color:white;
+
+cursor:pointer;
+
+}
+
+/* ---------- Hero ---------- */
+
 .hero{
 
-min-height:70vh;
-
-display:flex;
-
-flex-direction:column;
-
-justify-content:center;
-
-align-items:center;
+padding:70px 8%;
 
 text-align:center;
-
-padding:40px;
 
 animation:fadeUp .8s ease;
 
 }
 
-.badge{
+.greeting{
 
-padding:10px 20px;
+font-size:15px;
 
-border-radius:999px;
+color:#82BFFF;
 
-background:#14243D;
-
-color:#8EC7FF;
-
-margin-bottom:24px;
+margin-bottom:12px;
 
 }
 
 .hero h1{
 
-font-size:72px;
+font-size:42px;
+
+line-height:1.1;
 
 margin-bottom:20px;
 
 }
 
-.hero p{
-
-max-width:700px;
-
-font-size:20px;
-
-line-height:1.7;
+.subtitle{
 
 color:var(--secondary);
 
+max-width:650px;
+
+margin:auto;
+
+font-size:18px;
+
+line-height:1.7;
+
 }
 
-.buttons{
+/* ---------- Quick Actions ---------- */
 
-display:flex;
+.actions{
+
+display:grid;
+
+grid-template-columns:1fr;
 
 gap:18px;
 
-margin-top:40px;
+margin-top:45px;
 
 }
 
-.primary{
+.action-card{
 
-background:var(--primary);
+background:var(--card);
 
-padding:16px 34px;
+border-radius:18px;
 
-border-radius:14px;
+padding:22px;
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
 
 text-decoration:none;
 
@@ -158,81 +192,95 @@ font-weight:600;
 
 transition:.25s;
 
-}
-
-.primary:hover{
-
-background:var(--primary-hover);
-
-transform:translateY(-2px);
+cursor:pointer;
 
 }
 
-.secondary{
+.action-card:hover{
 
-border:1px solid #2A3B56;
+transform:translateY(-4px);
 
-padding:16px 34px;
-
-border-radius:14px;
-
-text-decoration:none;
-
-color:white;
-
-transition:.25s;
+background:#20304A;
 
 }
 
-.secondary:hover{
+/* ---------- Sections ---------- */
 
-background:#182233;
+.updates,
 
-}
+.featured,
 
-.features{
+.project-news,
 
-display:grid;
+.furina-message{
 
-grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-
-gap:25px;
-
-padding:80px 10%;
+padding:55px 8%;
 
 }
 
-.card{
+.updates h2,
+
+.featured h2,
+
+.project-news h2{
+
+margin-bottom:20px;
+
+font-size:26px;
+
+}
+
+.update-list{
+
+display:flex;
+
+flex-direction:column;
+
+gap:14px;
+
+}
+
+.update-list div{
 
 background:var(--card);
 
-padding:40px;
+padding:18px;
+
+border-radius:16px;
+
+}
+
+.featured-card{
+
+background:linear-gradient(135deg,#17253D,#111827);
+
+padding:28px;
 
 border-radius:20px;
 
-transition:.25s;
-
 }
 
-.card:hover{
+.project-news ul{
 
-transform:translateY(-5px);
+padding-left:20px;
 
-}
-
-.card h2{
-
-margin-bottom:15px;
-
-font-size:30px;
-
-}
-
-.card p{
+line-height:2;
 
 color:var(--secondary);
 
 }
+
+.furina-message{
+
+text-align:center;
+
+font-style:italic;
+
+color:var(--secondary);
+
+}
+
+/* ---------- Footer ---------- */
 
 footer{
 
@@ -240,9 +288,47 @@ padding:50px;
 
 text-align:center;
 
-color:#7E8CA3;
+color:#7C8AA0;
 
 }
+
+/* ---------- Desktop ---------- */
+
+@media(min-width:900px){
+
+.menu-button{
+
+display:none;
+
+}
+
+.desktop-nav{
+
+display:flex;
+
+}
+
+.hero{
+
+padding:120px 8%;
+
+}
+
+.hero h1{
+
+font-size:72px;
+
+}
+
+.actions{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+/* ---------- Animation ---------- */
 
 @keyframes fadeUp{
 
@@ -250,7 +336,7 @@ from{
 
 opacity:0;
 
-transform:translateY(25px);
+transform:translateY(30px);
 
 }
 
@@ -262,4 +348,4 @@ transform:translateY(0);
 
 }
 
-}
+  }
