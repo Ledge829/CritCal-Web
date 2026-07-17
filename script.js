@@ -1,60 +1,87 @@
-console.log("We are live ~ Ledge • July 16");
+console.log("We are live ~ Ledge");
 
-// Time-of-day greeting -- only present on the homepage, so this must
-// not assume the element exists (script.js is shared across every page).
-const greeting = document.querySelector(".greeting");
+// Shared across every page -- loaded here first so analyze.js and
+// characters.js can both use it without redeclaring it (a duplicate
+// `const API_BASE` in a second <script> tag would be a fatal
+// SyntaxError, since plain scripts share one global scope).
+const API_BASE = "https://critcal.onrender.com";
+
+// ---------- Time-of-day greeting (homepage only) ----------
+const greeting = document.querySelector(".greeting-text");
 
 if (greeting) {
     const hour = new Date().getHours();
-
     if (hour < 12) {
-        greeting.textContent = "☀️ Good morning.";
+        greeting.textContent = "Good morning";
     } else if (hour < 18) {
-        greeting.textContent = "🌤️ Good afternoon.";
+        greeting.textContent = "Good afternoon";
     } else {
-        greeting.textContent = "🌙 Good evening.";
+        greeting.textContent = "Good evening";
     }
 }
 
-// Mobile navigation toggle
+// ---------- Mobile nav drawer ----------
 const menuButton = document.querySelector(".menu-button");
-const desktopNav = document.querySelector(".desktop-nav");
+const mobileNav = document.querySelector(".mobile-nav");
+
+function closeMobileNav() {
+    menuButton?.classList.remove("is-open");
+    mobileNav?.classList.remove("is-open");
+    menuButton?.setAttribute("aria-expanded", "false");
+}
 
 menuButton?.addEventListener("click", () => {
-    desktopNav?.classList.toggle("nav-open");
+    const willOpen = !mobileNav?.classList.contains("is-open");
+    menuButton.classList.toggle("is-open", willOpen);
+    mobileNav?.classList.toggle("is-open", willOpen);
+    menuButton.setAttribute("aria-expanded", String(willOpen));
 });
 
-// Close the mobile menu after tapping a link, so it doesn't stay open
-// on the page you just navigated to.
-desktopNav?.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-        desktopNav.classList.remove("nav-open");
+mobileNav?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", closeMobileNav);
+});
+
+// ---------- Furina flavor message (homepage only) ----------
+const messages = [
+    "Ready for another evaluation?",
+    "Let's optimize another build.",
+    "Hope your artifact rolls were kind.",
+    "Transparent scoring starts here.",
+    "Every point explained.",
+];
+
+const furinaMessage = document.querySelector(".furina-message-text");
+
+if (furinaMessage) {
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    furinaMessage.textContent = `"${randomMessage}"`;
+}
+
+// ---------- API status indicator (homepage only) ----------
+const statusDot = document.querySelector(".status-dot");
+const statusLabel = document.querySelector(".status-label");
+
+if (statusDot && typeof API_BASE !== "undefined") {
+    fetch(`${API_BASE}/ping`)
+        .then((r) => {
+            if (r.ok) {
+                statusDot.classList.add("online");
+                if (statusLabel) statusLabel.textContent = "API Online";
+            } else {
+                throw new Error("bad status");
+            }
+        })
+        .catch(() => {
+            statusDot.classList.add("offline");
+            if (statusLabel) statusLabel.textContent = "API Waking Up";
+        });
+}
+
+// ---------- Cursor-tracked glow on action cards ----------
+document.querySelectorAll(".action-card").forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+        card.style.setProperty("--my", `${e.clientY - rect.top}px`);
     });
 });
-
-// Homepage startup message -- only present on the homepage.
-const messages = [
-
-    "Ready for another evaluation?",
-
-    "Let's optimize another build.",
-
-    "Hope your artifact rolls were kind.",
-
-    "Transparent scoring starts here.",
-
-    "Every point explained."
-
-];
-
-const randomMessage = messages[
-    Math.floor(Math.random() * messages.length)
-];
-
-const furinaMessage = document.querySelector(".furina-message p");
-
-if(furinaMessage){
-
-    furinaMessage.textContent = `"${randomMessage}"`;
-
-}
