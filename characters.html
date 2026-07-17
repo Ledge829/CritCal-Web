@@ -4,20 +4,13 @@
 <head>
 
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Characters • CritCal</title>
-
-    <meta name="description"
-        content="Browse every Genshin Impact character CritCal supports.">
+    <meta name="description" content="Browse every Genshin Impact character CritCal supports.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="style.css">
 
@@ -25,12 +18,15 @@
 
 <body>
 
-<header class="navbar">
-    <a class="logo" href="index.html">CritCal</a>
+<div class="bg-orbs"></div>
 
-    <button class="menu-button">
-        ☰
-    </button>
+<header class="navbar">
+    <a class="logo" href="index.html">
+        <span class="logo-mark">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#04101F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+        </span>
+        CritCal
+    </a>
 
     <nav class="desktop-nav">
         <a href="index.html">Home</a>
@@ -38,30 +34,50 @@
         <a href="analyze.html">Analyze</a>
         <a href="about.html">About</a>
     </nav>
+
+    <a class="btn btn-primary nav-cta" href="analyze.html">Analyze Build</a>
+
+    <button class="menu-button" aria-label="Toggle menu" aria-expanded="false">
+        <svg class="menu-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg class="menu-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
 </header>
+
+<nav class="mobile-nav">
+    <a href="index.html">Home</a>
+    <a href="characters.html" class="active">Characters</a>
+    <a href="analyze.html">Analyze</a>
+    <a href="about.html">About</a>
+</nav>
 
 <main class="characters-page">
 
-<section class="page-heading">
+<section class="page-heading fade-up">
+    <p class="eyebrow">108 Characters</p>
     <h1>Characters</h1>
     <p class="subtitle">
         Tap a character to jump straight into analyzing their build.
     </p>
 </section>
 
-<div class="filter-bar">
-    <input type="text" id="search-input" placeholder="Search a character..." autocomplete="off">
+<div class="filter-bar fade-up fade-up-1">
 
-    <select id="element-filter">
-        <option value="">All Elements</option>
-        <option value="pyro">Pyro</option>
-        <option value="hydro">Hydro</option>
-        <option value="anemo">Anemo</option>
-        <option value="electro">Electro</option>
-        <option value="dendro">Dendro</option>
-        <option value="cryo">Cryo</option>
-        <option value="geo">Geo</option>
-    </select>
+    <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="search-input" placeholder="Search a character..." autocomplete="off">
+    </div>
+
+    <div class="element-pills" id="element-pills">
+        <button class="element-pill is-active" data-element="">All</button>
+        <button class="element-pill" data-element="pyro" style="--el-color:#FF6B4A">Pyro</button>
+        <button class="element-pill" data-element="hydro" style="--el-color:#4EA7FF">Hydro</button>
+        <button class="element-pill" data-element="anemo" style="--el-color:#6FE0C0">Anemo</button>
+        <button class="element-pill" data-element="electro" style="--el-color:#C79BFF">Electro</button>
+        <button class="element-pill" data-element="dendro" style="--el-color:#A8D24A">Dendro</button>
+        <button class="element-pill" data-element="cryo" style="--el-color:#9BE3FF">Cryo</button>
+        <button class="element-pill" data-element="geo" style="--el-color:#FFD86B">Geo</button>
+    </div>
+
 </div>
 
 <p id="result-count" class="result-count"></p>
@@ -71,15 +87,18 @@
 </main>
 
 <footer>
-
-CritCal • Open Source • Built for the community
-
+    CritCal • Open Source • Built for the community
+    <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="analyze.html">Analyze</a>
+        <a href="about.html">About</a>
+    </div>
 </footer>
 
 <script src="script.js"></script>
+<script src="icons.js"></script>
 <script src="characters.js"></script>
 
 </body>
 
-  </html>
-  
+</html>
