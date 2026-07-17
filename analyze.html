@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Analyze Build • CritCal</title>
+
+    <meta name="description"
+        content="Get a transparent, tier-aware rating of your Genshin Impact character build.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+    <a class="logo" href="index.html">CritCal</a>
+
+    <button class="menu-button">
+        ☰
+    </button>
+
+    <nav class="desktop-nav">
+        <a href="index.html">Home</a>
+        <a href="characters.html">Characters</a>
+        <a href="analyze.html" class="active">Analyze</a>
+        <a href="about.html">About</a>
+    </nav>
+</header>
+
+<main class="analyze-page">
+
+<section class="page-heading">
+    <h1>Analyze your build</h1>
+    <p class="subtitle">
+        Fill in your panel stats. Weapon and artifacts are optional, plain text --
+        just describe what you're running.
+    </p>
+</section>
+
+<form id="analyze-form" class="analyze-form" novalidate>
+
+    <div class="field">
+        <label for="character">Character <span class="required">*</span></label>
+        <input type="text" id="character" name="character" list="character-options"
+            placeholder="e.g. Hu Tao" autocomplete="off" required>
+        <datalist id="character-options"></datalist>
+    </div>
+
+    <div class="field-row">
+
+        <div class="field">
+            <label for="crit_rate">Crit Rate % <span class="required">*</span></label>
+            <input type="number" id="crit_rate" name="crit_rate" placeholder="68.5" step="0.1" min="0" required>
+        </div>
+
+        <div class="field">
+            <label for="crit_dmg">Crit DMG % <span class="required">*</span></label>
+            <input type="number" id="crit_dmg" name="crit_dmg" placeholder="145.2" step="0.1" min="0" required>
+        </div>
+
+        <div class="field">
+            <label for="atk">ATK <span class="required">*</span></label>
+            <input type="number" id="atk" name="atk" placeholder="2100" step="1" min="0" required>
+        </div>
+
+    </div>
+
+    <div class="field">
+        <label for="weapon">Weapon <span class="optional">optional</span></label>
+        <input type="text" id="weapon" name="weapon" placeholder="e.g. Staff of Homa r1" autocomplete="off">
+    </div>
+
+    <div class="field">
+        <label for="artifacts">Artifacts <span class="optional">optional</span></label>
+        <input type="text" id="artifacts" name="artifacts"
+            placeholder="e.g. 4pc Crimson Witch of Flames" autocomplete="off">
+    </div>
+
+    <details class="advanced-toggle">
+        <summary>Advanced stats (optional)</summary>
+
+        <div class="field-row">
+            <div class="field">
+                <label for="hp">HP</label>
+                <input type="number" id="hp" name="hp" placeholder="0" step="1" min="0">
+            </div>
+            <div class="field">
+                <label for="def">DEF</label>
+                <input type="number" id="def" name="def" placeholder="0" step="1" min="0">
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="field">
+                <label for="elemental_mastery">Elemental Mastery</label>
+                <input type="number" id="elemental_mastery" name="elemental_mastery" placeholder="0" step="1" min="0">
+            </div>
+            <div class="field">
+                <label for="energy_recharge">Energy Recharge %</label>
+                <input type="number" id="energy_recharge" name="energy_recharge" placeholder="100" step="0.1" min="0">
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="field">
+                <label for="character_scaling">Force scaling stat</label>
+                <select id="character_scaling" name="character_scaling">
+                    <option value="">Auto (recommended)</option>
+                    <option value="atk">ATK</option>
+                    <option value="hp">HP</option>
+                    <option value="def">DEF</option>
+                    <option value="em">Elemental Mastery</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="ideal_crit_ratio">Ideal Crit Ratio</label>
+                <input type="number" id="ideal_crit_ratio" name="ideal_crit_ratio" placeholder="e.g. 2.0" step="0.1" min="0">
+            </div>
+        </div>
+    </details>
+
+    <button type="submit" class="submit-button" id="submit-button">
+        Rate this build
+    </button>
+
+</form>
+
+<section id="result-area" class="result-area" hidden></section>
+
+</main>
+
+<footer>
+
+CritCal • Open Source • Built for the community
+
+</footer>
+
+<script src="script.js"></script>
+<script src="analyze.js"></script>
+
+</body>
+
+              </html>
+          
