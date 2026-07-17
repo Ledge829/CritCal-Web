@@ -1,35 +1,38 @@
 console.log("We are live ~ Ledge • July 16");
 
+// Time-of-day greeting -- only present on the homepage, so this must
+// not assume the element exists (script.js is shared across every page).
 const greeting = document.querySelector(".greeting");
 
-const hour = new Date().getHours();
+if (greeting) {
+    const hour = new Date().getHours();
 
-if(hour < 12){
-
-    greeting.textContent = "☀️ Good morning.";
-
-}
-else if(hour < 18){
-
-    greeting.textContent = "🌤️ Good afternoon.";
-
-}
-else{
-
-    greeting.textContent = "🌙 Good evening.";
-
+    if (hour < 12) {
+        greeting.textContent = "☀️ Good morning.";
+    } else if (hour < 18) {
+        greeting.textContent = "🌤️ Good afternoon.";
+    } else {
+        greeting.textContent = "🌙 Good evening.";
+    }
 }
 
-// Placeholder for future menu functionality
+// Mobile navigation toggle
 const menuButton = document.querySelector(".menu-button");
+const desktopNav = document.querySelector(".desktop-nav");
 
 menuButton?.addEventListener("click", () => {
-
-    console.log("Open mobile navigation");
-
+    desktopNav?.classList.toggle("nav-open");
 });
 
-// Homepage startup message
+// Close the mobile menu after tapping a link, so it doesn't stay open
+// on the page you just navigated to.
+desktopNav?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+        desktopNav.classList.remove("nav-open");
+    });
+});
+
+// Homepage startup message -- only present on the homepage.
 const messages = [
 
     "Ready for another evaluation?",
@@ -54,4 +57,4 @@ if(furinaMessage){
 
     furinaMessage.textContent = `"${randomMessage}"`;
 
-      }
+}
