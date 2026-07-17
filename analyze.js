@@ -1,4 +1,4 @@
-const API_BASE = "https://critcal.onrender.com";
+// API_BASE comes from script.js (loaded before this file).
 
 const form = document.getElementById("analyze-form");
 const submitButton = document.getElementById("submit-button");
@@ -7,9 +7,6 @@ const characterInput = document.getElementById("character");
 const characterOptions = document.getElementById("character-options");
 
 // ---------- Autocomplete: populate the character datalist ----------
-// Failing silently here is fine -- the character field still works as
-// plain free text if this fetch doesn't come back, the API resolves
-// names/aliases either way.
 fetch(`${API_BASE}/characters`)
     .then((r) => r.json())
     .then((data) => {
@@ -22,7 +19,7 @@ fetch(`${API_BASE}/characters`)
         characterOptions.appendChild(frag);
     })
     .catch(() => {
-        // Autocomplete just won't populate -- not fatal.
+        // Autocomplete just won't populate -- not fatal, plain text still works.
     });
 
 // ---------- Pre-fill from ?character=Name (used by the browse page) ----------
@@ -83,7 +80,7 @@ form.addEventListener("submit", async (event) => {
         );
     } finally {
         submitButton.disabled = false;
-        submitButton.textContent = "Rate this build";
+        submitButton.innerHTML = `${UI_ICONS.analyze}Rate this build`;
     }
 });
 
@@ -98,7 +95,7 @@ async function callApi(body) {
 
 function setLoadingState() {
     submitButton.disabled = true;
-    submitButton.textContent = "Calculating...";
+    submitButton.innerHTML = `<span class="spinner" style="width:18px;height:18px;border-width:2px;"></span> Calculating...`;
     resultArea.hidden = false;
     resultArea.innerHTML = `
         <div class="result-card loading-card">
@@ -106,14 +103,14 @@ function setLoadingState() {
             <p id="loading-message">Calculating your build...</p>
         </div>
     `;
-    // Free hosting on Render spins the server down after inactivity --
-    // the very first request after a while can take 30-50+ seconds
-    // while it wakes back up. Let the person know what's happening
-    // instead of leaving them staring at a spinner with no context.
     setTimeout(() => {
         const msg = document.getElementById("loading-message");
         if (msg) {
-            msg.textContent = "Still working -- the server may be waking up from sleep. This can take up to a minute on the first request.";
+            msg.style.opacity = "0";
+            setTimeout(() => {
+                msg.textContent = "Still working -- the server may be waking up from sleep. This can take up to a minute on the first request.";
+                msg.style.opacity = "1";
+            }, 200);
         }
     }, 6000);
     resultArea.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -133,7 +130,13 @@ function tierClass(tier) {
     return "tier-" + tier.toLowerCase().replace(/\s+/g, "-");
 }
 
+const GRADE_COLORS = {
+    S: "#4ADE80", A: "#4EA7FF", B: "#C79BFF", C: "#FFD86B", D: "#FF7A94",
+};
+
 function renderResult(data) {
+    const gradeColor = data.embed_color || GRADE_COLORS[data.grade] || "#4EA7FF";
+
     const weaponBadge = data.weapon_tier
         ? `<span class="tier-badge ${tierClass(data.weapon_tier)}">${escapeHtml(data.weapon_tier)}</span>`
         : "";
@@ -143,15 +146,23 @@ function renderResult(data) {
 
     const equipmentSection = (data.weapon_name || data.primary_artifact_set_name) ? `
         <div class="result-section">
-            <h3>Equipment</h3>
-            ${data.weapon_name ? `<p><strong>Weapon:</strong> ${escapeHtml(data.weapon_name)}${data.weapon_refinement ? ` (R${data.weapon_refinement})` : ""} ${weaponBadge}</p>` : ""}
-            ${data.primary_artifact_set_name ? `<p><strong>Artifacts:</strong> ${escapeHtml(data.primary_artifact_set_name)} (${data.primary_artifact_set_count}pc) ${artifactBadge}</p>` : ""}
+            <div class="result-section-title">${UI_ICONS.gem}Equipment</div>
+            ${data.weapon_name ? `
+                <div class="equipment-row">
+                    <span><strong>${escapeHtml(data.weapon_name)}</strong><span>Weapon${data.weapon_refinement ? ` &middot; R${data.weapon_refinement}` : ""}</span></span>
+                    ${weaponBadge}
+                </div>` : ""}
+            ${data.primary_artifact_set_name ? `
+                <div class="equipment-row">
+                    <span><strong>${escapeHtml(data.primary_artifact_set_name)}</strong><span>Artifacts &middot; ${data.primary_artifact_set_count}pc</span></span>
+                    ${artifactBadge}
+                </div>` : ""}
         </div>
     ` : "";
 
     const benchmarkSection = (data.benchmark_status && data.benchmark_status.length) ? `
         <div class="result-section">
-            <h3>Benchmarks</h3>
+            <div class="result-section-title">${UI_ICONS.shield}Benchmarks</div>
             <ul class="result-list">
                 ${data.benchmark_status.map((b) => `<li>${escapeHtml(b)}</li>`).join("")}
             </ul>
@@ -160,7 +171,7 @@ function renderResult(data) {
 
     const recommendationsSection = (data.recommendations && data.recommendations.length) ? `
         <div class="result-section">
-            <h3>Recommendations</h3>
+            <div class="result-section-title">${UI_ICONS.sparkle}Recommendations</div>
             <ul class="result-list">
                 ${data.recommendations.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}
             </ul>
@@ -171,7 +182,7 @@ function renderResult(data) {
         <div class="result-card">
 
             <div class="grade-header">
-                <div class="grade-circle" style="border-color: ${escapeHtml(data.embed_color || "#4EA7FF")}; color: ${escapeHtml(data.embed_color || "#4EA7FF")}">
+                <div class="grade-circle" style="--grade-color: ${escapeHtml(gradeColor)}">
                     ${escapeHtml(data.grade || "?")}
                 </div>
                 <div>
@@ -185,7 +196,7 @@ function renderResult(data) {
             <div class="score-row">
                 <div class="score-chip">
                     <span class="score-value">${data.overall_score ?? "--"}</span>
-                    <span class="score-label">Overall Score</span>
+                    <span class="score-label">Score</span>
                 </div>
                 <div class="score-chip">
                     <span class="score-value">${data.crit_value ?? "--"}</span>
@@ -198,7 +209,7 @@ function renderResult(data) {
             </div>
 
             <div class="result-section">
-                <h3>Build Summary</h3>
+                <div class="result-section-title">${UI_ICONS.layers}Build Summary</div>
                 <p>${escapeHtml(data.build_description || "")}</p>
             </div>
 
@@ -214,5 +225,5 @@ function escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = String(str);
     return div.innerHTML;
-  }
-      
+        }
+        
