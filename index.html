@@ -26,17 +26,17 @@
 <body>
 
 <header class="navbar">
-    <div class="logo">CritCal</div>
+    <a class="logo" href="index.html">CritCal</a>
 
     <button class="menu-button">
         ☰
     </button>
 
     <nav class="desktop-nav">
-        <a href="#">Home</a>
-        <a href="#">Characters</a>
-        <a href="#">Analyze</a>
-        <a href="#">About</a>
+        <a href="index.html" class="active">Home</a>
+        <a href="characters.html">Characters</a>
+        <a href="analyze.html">Analyze</a>
+        <a href="about.html">About</a>
     </nav>
 </header>
 
@@ -58,22 +58,22 @@
 
     <div class="actions">
 
-        <a class="action-card" href="#">
+        <a class="action-card" href="analyze.html">
             🔍
             <span>Analyze Build</span>
         </a>
 
-        <a class="action-card" href="#">
+        <a class="action-card" href="characters.html">
             👤
             <span>Browse Characters</span>
         </a>
 
-        <a class="action-card" href="#">
+        <a class="action-card" href="characters.html">
             📚
             <span>Build Guides</span>
         </a>
 
-        <a class="action-card" href="#">
+        <a class="action-card" href="#project-news">
             📢
             <span>Latest Updates</span>
         </a>
@@ -90,11 +90,11 @@
 
     <div class="update-list">
 
-        <div>✨ Skirk</div>
+        <a href="analyze.html?character=Skirk">✨ Skirk</a>
 
-        <div>✨ Escoffier</div>
+        <a href="analyze.html?character=Escoffier">✨ Escoffier</a>
 
-        <div>✨ Dahlia</div>
+        <a href="analyze.html?character=Dahlia">✨ Dahlia</a>
 
     </div>
 
@@ -106,7 +106,7 @@
         Featured Character
     </h2>
 
-    <div class="featured-card">
+    <a class="featured-card" href="analyze.html?character=Furina">
 
         <h3>Furina</h3>
 
@@ -114,11 +114,11 @@
             View recommended builds and analysis.
         </p>
 
-    </div>
+    </a>
 
 </section>
 
-<section class="project-news">
+<section class="project-news" id="project-news">
 
     <h2>
         Development Updates
@@ -130,7 +130,7 @@
 
         <li>⚡ API online</li>
 
-        <li>🎉 91 Characters supported</li>
+        <li>🎉 108 Characters supported</li>
 
     </ul>
 
@@ -164,4 +164,5 @@ CritCal • Open Source • Built for the community
 
 </body>
 
-                            </html>
+            </html>
+            
