@@ -1,23 +1,14 @@
-const API_BASE = "https://critcal.onrender.com";
+// API_BASE comes from script.js, icon helpers come from icons.js (both loaded before this file).
 
 const grid = document.getElementById("character-grid");
 const searchInput = document.getElementById("search-input");
-const elementFilter = document.getElementById("element-filter");
+const elementPills = document.querySelectorAll(".element-pill");
 const resultCount = document.getElementById("result-count");
 
-const ELEMENT_COLORS = {
-    pyro: "#FF6B4A",
-    hydro: "#4EA7FF",
-    anemo: "#6FE0C0",
-    electro: "#C79BFF",
-    dendro: "#A8D24A",
-    cryo: "#9BE3FF",
-    geo: "#FFD86B",
-};
-
 let allCharacters = [];
+let activeElement = "";
 
-grid.innerHTML = `<p class="loading-text">Loading characters...</p>`;
+grid.innerHTML = renderSkeletons(12);
 
 fetch(`${API_BASE}/characters`)
     .then((r) => r.json())
@@ -35,15 +26,22 @@ fetch(`${API_BASE}/characters`)
     });
 
 searchInput.addEventListener("input", render);
-elementFilter.addEventListener("change", render);
+
+elementPills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+        elementPills.forEach((p) => p.classList.remove("is-active"));
+        pill.classList.add("is-active");
+        activeElement = pill.dataset.element || "";
+        render();
+    });
+});
 
 function render() {
     const query = searchInput.value.trim().toLowerCase();
-    const element = elementFilter.value;
 
     const filtered = allCharacters.filter((c) => {
         const matchesQuery = !query || c.name.toLowerCase().includes(query);
-        const matchesElement = !element || c.element === element;
+        const matchesElement = !activeElement || c.element === activeElement;
         return matchesQuery && matchesElement;
     });
 
@@ -54,17 +52,43 @@ function render() {
         return;
     }
 
-    grid.innerHTML = filtered.map((c) => {
-        const color = ELEMENT_COLORS[c.element] || "#4EA7FF";
-        const roles = (c.roles || []).join(" / ");
-        return `
-            <a class="character-card" href="analyze.html?character=${encodeURIComponent(c.name)}" style="--accent: ${color}">
-                <span class="character-element">${capitalize(c.element || "")}</span>
+    grid.innerHTML = filtered.map(characterCardHtml).join("");
+}
+
+function characterCardHtml(c) {
+    const color = elementColor(c.element);
+    const roles = (c.roles || []).join(" · ");
+    const initial = (c.name || "?").charAt(0).toUpperCase();
+
+    return `
+        <a class="character-card" href="analyze.html?character=${encodeURIComponent(c.name)}" style="--el-color: ${color}">
+            <div class="character-portrait">${initial}</div>
+            <div class="character-info">
                 <span class="character-name">${escapeHtml(c.name)}</span>
-                <span class="character-roles">${escapeHtml(roles)}</span>
-            </a>
-        `;
-    }).join("");
+                <div class="character-meta">
+                    <span class="element-badge" style="--el-color: ${color}">
+                        ${elementIcon(c.element)}
+                        ${capitalize(c.element || "")}
+                    </span>
+                    ${c.weapon_type ? `<span class="weapon-type-icon" title="${capitalize(c.weapon_type)}">${weaponTypeIcon(c.weapon_type)}</span>` : ""}
+                    ${rarityStars(c.rarity)}
+                </div>
+                ${roles ? `<span class="character-roles">${escapeHtml(roles)}</span>` : ""}
+            </div>
+        </a>
+    `;
+}
+
+function renderSkeletons(count) {
+    return Array.from({ length: count }).map(() => `
+        <div class="character-card" style="pointer-events:none;">
+            <div class="skeleton" style="width:52px;height:52px;border-radius:15px;"></div>
+            <div class="character-info">
+                <div class="skeleton" style="width:70%;height:15px;"></div>
+                <div class="skeleton" style="width:50%;height:12px;margin-top:6px;"></div>
+            </div>
+        </div>
+    `).join("");
 }
 
 function capitalize(str) {
@@ -75,5 +99,4 @@ function escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = String(str);
     return div.innerHTML;
-  }
-      
+                      }
