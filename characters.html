@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Characters • CritCal</title>
+
+    <meta name="description"
+        content="Browse every Genshin Impact character CritCal supports.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+    <a class="logo" href="index.html">CritCal</a>
+
+    <button class="menu-button">
+        ☰
+    </button>
+
+    <nav class="desktop-nav">
+        <a href="index.html">Home</a>
+        <a href="characters.html" class="active">Characters</a>
+        <a href="analyze.html">Analyze</a>
+        <a href="about.html">About</a>
+    </nav>
+</header>
+
+<main class="characters-page">
+
+<section class="page-heading">
+    <h1>Characters</h1>
+    <p class="subtitle">
+        Tap a character to jump straight into analyzing their build.
+    </p>
+</section>
+
+<div class="filter-bar">
+    <input type="text" id="search-input" placeholder="Search a character..." autocomplete="off">
+
+    <select id="element-filter">
+        <option value="">All Elements</option>
+        <option value="pyro">Pyro</option>
+        <option value="hydro">Hydro</option>
+        <option value="anemo">Anemo</option>
+        <option value="electro">Electro</option>
+        <option value="dendro">Dendro</option>
+        <option value="cryo">Cryo</option>
+        <option value="geo">Geo</option>
+    </select>
+</div>
+
+<p id="result-count" class="result-count"></p>
+
+<div id="character-grid" class="character-grid"></div>
+
+</main>
+
+<footer>
+
+CritCal • Open Source • Built for the community
+
+</footer>
+
+<script src="script.js"></script>
+<script src="characters.js"></script>
+
+</body>
+
+  </html>
+  
