@@ -41,6 +41,10 @@ mobileNav?.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", closeMobileNav);
 });
 
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMobileNav();
+});
+
 // ---------- Furina flavor message (homepage only) ----------
 const messages = [
     "Ready for another evaluation?",
@@ -77,11 +81,7 @@ if (statusDot && typeof API_BASE !== "undefined") {
         });
 }
 
-// ---------- Cursor-tracked glow on action cards ----------
-document.querySelectorAll(".action-card").forEach((card) => {
-    card.addEventListener("mousemove", (e) => {
-        const rect = card.getBoundingClientRect();
-        card.style.setProperty("--mx", `${e.clientX - rect.left}px`);
-        card.style.setProperty("--my", `${e.clientY - rect.top}px`);
-    });
-});
+// (No cursor-tracked hover effects here on purpose -- a mousemove
+// listener firing on every pixel of pointer movement is exactly the
+// kind of "unnecessary JS" the calmer, performance-first design is
+// meant to avoid, and the flatter card style doesn't call for it.)

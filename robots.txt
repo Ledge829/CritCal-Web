@@ -1,0 +1,5 @@
+# CritCal -- open, community tool. Everything here is safe to index.
+User-agent: *
+Allow: /
+
+Sitemap: https://critcal.vercel.app/sitemap.xml

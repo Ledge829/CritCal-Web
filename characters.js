@@ -1,4 +1,4 @@
-// API_BASE comes from script.js, icon helpers come from icons.js (both loaded before this file).
+// API_BASE from script.js, icon/color helpers from icons.js, portraitHtml from portraits.js.
 
 const grid = document.getElementById("character-grid");
 const searchInput = document.getElementById("search-input");
@@ -29,8 +29,12 @@ searchInput.addEventListener("input", render);
 
 elementPills.forEach((pill) => {
     pill.addEventListener("click", () => {
-        elementPills.forEach((p) => p.classList.remove("is-active"));
+        elementPills.forEach((p) => {
+            p.classList.remove("is-active");
+            p.setAttribute("aria-pressed", "false");
+        });
         pill.classList.add("is-active");
+        pill.setAttribute("aria-pressed", "true");
         activeElement = pill.dataset.element || "";
         render();
     });
@@ -58,11 +62,10 @@ function render() {
 function characterCardHtml(c) {
     const color = elementColor(c.element);
     const roles = (c.roles || []).join(" · ");
-    const initial = (c.name || "?").charAt(0).toUpperCase();
 
     return `
         <a class="character-card" href="analyze.html?character=${encodeURIComponent(c.name)}" style="--el-color: ${color}">
-            <div class="character-portrait">${initial}</div>
+            ${portraitHtml(c, "character-portrait")}
             <div class="character-info">
                 <span class="character-name">${escapeHtml(c.name)}</span>
                 <div class="character-meta">
@@ -70,7 +73,7 @@ function characterCardHtml(c) {
                         ${elementIcon(c.element)}
                         ${capitalize(c.element || "")}
                     </span>
-                    ${c.weapon_type ? `<span class="weapon-type-icon" title="${capitalize(c.weapon_type)}">${weaponTypeIcon(c.weapon_type)}</span>` : ""}
+                    ${c.weapon_type ? `<span class="weapon-type-icon" title="${capitalize(c.weapon_type)}" aria-hidden="true">${weaponTypeIcon(c.weapon_type)}</span>` : ""}
                     ${rarityStars(c.rarity)}
                 </div>
                 ${roles ? `<span class="character-roles">${escapeHtml(roles)}</span>` : ""}
@@ -81,11 +84,11 @@ function characterCardHtml(c) {
 
 function renderSkeletons(count) {
     return Array.from({ length: count }).map(() => `
-        <div class="character-card" style="pointer-events:none;">
-            <div class="skeleton" style="width:52px;height:52px;border-radius:15px;"></div>
+        <div class="character-card" style="pointer-events:none;" aria-hidden="true">
+            <div class="skeleton" style="width:48px;height:48px;border-radius:13px;"></div>
             <div class="character-info">
-                <div class="skeleton" style="width:70%;height:15px;"></div>
-                <div class="skeleton" style="width:50%;height:12px;margin-top:6px;"></div>
+                <div class="skeleton" style="width:70%;height:14px;"></div>
+                <div class="skeleton" style="width:50%;height:11px;margin-top:6px;"></div>
             </div>
         </div>
     `).join("");

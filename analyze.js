@@ -1,26 +1,56 @@
-// API_BASE comes from script.js (loaded before this file).
+// API_BASE from script.js, icon/color helpers from icons.js, portraitInnerHtml from portraits.js.
 
 const form = document.getElementById("analyze-form");
 const submitButton = document.getElementById("submit-button");
 const resultArea = document.getElementById("result-area");
 const characterInput = document.getElementById("character");
 const characterOptions = document.getElementById("character-options");
+const characterPreview = document.getElementById("character-preview");
+const previewAvatar = document.getElementById("preview-avatar");
+const previewText = document.getElementById("preview-text");
 
-// ---------- Autocomplete: populate the character datalist ----------
+let allCharacters = [];
+
+// ---------- Autocomplete + character preview data ----------
 fetch(`${API_BASE}/characters`)
     .then((r) => r.json())
     .then((data) => {
+        allCharacters = data.characters || [];
         const frag = document.createDocumentFragment();
-        for (const c of data.characters || []) {
+        for (const c of allCharacters) {
             const opt = document.createElement("option");
             opt.value = c.name;
             frag.appendChild(opt);
         }
         characterOptions.appendChild(frag);
+        updateCharacterPreview();
     })
     .catch(() => {
-        // Autocomplete just won't populate -- not fatal, plain text still works.
+        // Autocomplete/preview just won't populate -- not fatal, plain text still works.
     });
+
+// ---------- Live character preview as the person types ----------
+function updateCharacterPreview() {
+    const typed = characterInput.value.trim().toLowerCase();
+    const match = typed && allCharacters.find((c) => c.name.toLowerCase() === typed);
+
+    if (!match) {
+        characterPreview.classList.remove("is-visible");
+        return;
+    }
+
+    previewAvatar.style.setProperty("--el-color", elementColor(match.element));
+    previewAvatar.innerHTML = portraitInnerHtml(match);
+    const roles = (match.roles || []).join(" · ");
+    previewText.textContent = `${capitalize(match.element || "")}${match.rarity ? ` · ${match.rarity}★` : ""}${roles ? ` · ${roles}` : ""}`;
+    characterPreview.classList.add("is-visible");
+}
+
+characterInput.addEventListener("input", updateCharacterPreview);
+
+function capitalize(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+}
 
 // ---------- Pre-fill from ?character=Name (used by the browse page) ----------
 const params = new URLSearchParams(window.location.search);
@@ -95,7 +125,7 @@ async function callApi(body) {
 
 function setLoadingState() {
     submitButton.disabled = true;
-    submitButton.innerHTML = `<span class="spinner" style="width:18px;height:18px;border-width:2px;"></span> Calculating...`;
+    submitButton.innerHTML = `<span class="spinner" style="width:17px;height:17px;border-width:2px;"></span> Calculating...`;
     resultArea.hidden = false;
     resultArea.innerHTML = `
         <div class="result-card loading-card">
@@ -106,11 +136,7 @@ function setLoadingState() {
     setTimeout(() => {
         const msg = document.getElementById("loading-message");
         if (msg) {
-            msg.style.opacity = "0";
-            setTimeout(() => {
-                msg.textContent = "Still working -- the server may be waking up from sleep. This can take up to a minute on the first request.";
-                msg.style.opacity = "1";
-            }, 200);
+            msg.textContent = "Still working -- the server may be waking up from sleep. This can take up to a minute on the first request.";
         }
     }, 6000);
     resultArea.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -131,11 +157,11 @@ function tierClass(tier) {
 }
 
 const GRADE_COLORS = {
-    S: "#4ADE80", A: "#4EA7FF", B: "#C79BFF", C: "#FFD86B", D: "#FF7A94",
+    S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B",
 };
 
 function renderResult(data) {
-    const gradeColor = data.embed_color || GRADE_COLORS[data.grade] || "#4EA7FF";
+    const gradeColor = data.embed_color || GRADE_COLORS[data.grade] || "#5B9BD6";
 
     const weaponBadge = data.weapon_tier
         ? `<span class="tier-badge ${tierClass(data.weapon_tier)}">${escapeHtml(data.weapon_tier)}</span>`
@@ -225,5 +251,4 @@ function escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = String(str);
     return div.innerHTML;
-        }
-        
+}

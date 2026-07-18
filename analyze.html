@@ -5,8 +5,29 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyze Build • CritCal</title>
-    <meta name="description" content="Get a transparent, tier-aware rating of your Genshin Impact character build.">
+
+    <title>Analyze Build — CritCal</title>
+    <meta name="description" content="Rate your Genshin Impact character build. Enter your stats, weapon, and artifacts for a transparent, tier-aware score.">
+    <link rel="canonical" href="https://critcal.vercel.app/analyze.html">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://critcal.vercel.app/analyze.html">
+    <meta property="og:title" content="Analyze Build — CritCal">
+    <meta property="og:description" content="Rate your Genshin Impact character build. Enter your stats, weapon, and artifacts for a transparent, tier-aware score.">
+    <meta property="og:image" content="https://critcal.vercel.app/assets/social/og-image.png">
+    <meta property="og:site_name" content="CritCal">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Analyze Build — CritCal">
+    <meta name="twitter:description" content="Rate your Genshin Impact character build. Enter your stats, weapon, and artifacts for a transparent, tier-aware score.">
+    <meta name="twitter:image" content="https://critcal.vercel.app/assets/social/og-image.png">
+
+    <meta name="theme-color" content="#0A0D13">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,39 +39,39 @@
 
 <body>
 
-<div class="bg-orbs"></div>
+<a class="skip-link" href="#main-content">Skip to content</a>
 
 <header class="navbar">
     <a class="logo" href="index.html">
         <span class="logo-mark">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#04101F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
         </span>
         CritCal
     </a>
 
-    <nav class="desktop-nav">
+    <nav class="desktop-nav" aria-label="Primary">
         <a href="index.html">Home</a>
         <a href="characters.html">Characters</a>
-        <a href="analyze.html" class="active">Analyze</a>
+        <a href="analyze.html" class="active" aria-current="page">Analyze</a>
         <a href="about.html">About</a>
     </nav>
 
     <a class="btn btn-primary nav-cta" href="characters.html">Browse Characters</a>
 
-    <button class="menu-button" aria-label="Toggle menu" aria-expanded="false">
+    <button class="menu-button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
         <svg class="menu-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         <svg class="menu-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
 </header>
 
-<nav class="mobile-nav">
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
     <a href="index.html">Home</a>
     <a href="characters.html">Characters</a>
-    <a href="analyze.html" class="active">Analyze</a>
+    <a href="analyze.html" class="active" aria-current="page">Analyze</a>
     <a href="about.html">About</a>
 </nav>
 
-<main class="analyze-page">
+<main class="analyze-page" id="main-content">
 
 <section class="page-heading fade-up">
     <p class="eyebrow">Build Analyzer</p>
@@ -61,13 +82,13 @@
     </p>
 </section>
 
-<form id="analyze-form" class="fade-up fade-up-1" novalidate>
+<form id="analyze-form" class="fade-up fade-up-1" novalidate aria-label="Build analysis form">
 
     <div class="form-card">
 
         <div class="form-section">
             <div class="form-section-header">
-                <span class="icon-badge">
+                <span class="icon-badge" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                 </span>
                 <h3>Character</h3>
@@ -76,14 +97,20 @@
             <div class="field">
                 <label for="character">Character <span class="required">*</span></label>
                 <input type="text" id="character" name="character" list="character-options"
-                    placeholder="e.g. Hu Tao" autocomplete="off" required>
+                    placeholder="e.g. Hu Tao" autocomplete="off" required
+                    aria-describedby="character-preview">
                 <datalist id="character-options"></datalist>
+            </div>
+
+            <div class="character-preview" id="character-preview">
+                <span class="preview-avatar" id="preview-avatar"></span>
+                <span id="preview-text"></span>
             </div>
         </div>
 
         <div class="form-section">
             <div class="form-section-header">
-                <span class="icon-badge">
+                <span class="icon-badge" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
                 </span>
                 <h3>Panel Stats</h3>
@@ -107,7 +134,7 @@
 
         <div class="form-section">
             <div class="form-section-header">
-                <span class="icon-badge">
+                <span class="icon-badge" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2 20 7v10l-8 5-8-5V7z"/><circle cx="12" cy="12" r="3"/></svg>
                 </span>
                 <h3>Equipment</h3>
@@ -128,7 +155,7 @@
         <div class="form-section">
             <details class="advanced-toggle">
                 <summary>
-                    <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                     Advanced stats (optional)
                 </summary>
 
@@ -188,12 +215,12 @@
 
 </form>
 
-<section id="result-area" class="result-area" hidden></section>
+<section id="result-area" class="result-area" hidden aria-live="polite"></section>
 
 </main>
 
 <footer>
-    CritCal • Open Source • Built for the community
+    CritCal · Open Source · Built by and for the community
     <div class="footer-links">
         <a href="index.html">Home</a>
         <a href="characters.html">Characters</a>
@@ -203,9 +230,9 @@
 
 <script src="script.js"></script>
 <script src="icons.js"></script>
+<script src="portraits.js"></script>
 <script src="analyze.js"></script>
 
 </body>
 
-    </html>
-    
+</html>
