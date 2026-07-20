@@ -27,7 +27,7 @@ FALLBACK CHAIN (all handled by one onerror, no layout shift either way):
   2. assets/characters/<key>.png, if a portrait is manually added there later
   3. initial-letter avatar, colored by element
 
-Every <img> uses loading="lazy", so offscreen cards on the 108-character
+Every <img> uses loading="lazy", so offscreen cards on the 123-character
 browse page don't even issue a network request until scrolled near.
 */
 
