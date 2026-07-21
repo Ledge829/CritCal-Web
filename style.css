@@ -477,27 +477,11 @@ footer a:hover { color: var(--primary); }
     opacity: .8;
 }
 
-/* ---- Premium Search Hero ---- */
-.search-hero {
-    padding: 100px 6% 60px;
-    text-align: center;
-    max-width: 500px;
+/* ---- Utility-focused UID Search (Akasha-inspired) ---- */
+.uid-search-bar {
+    padding: 32px 0 24px;
+    max-width: 600px;
     margin: 0 auto;
-}
-
-.search-hero h1 {
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, #fff, #5B9BD6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.search-hero .subtitle {
-    color: var(--text-faint);
-    margin-bottom: 24px;
-    font-size: 15px;
 }
 
 .search-box {
@@ -518,7 +502,7 @@ footer a:hover { color: var(--primary); }
     flex-grow: 1;
     background: transparent;
     border: none;
-    padding: 12px 16px;
+    padding: 10px 16px;
     color: var(--text);
     font-size: 14px;
     outline: none;
@@ -527,10 +511,14 @@ footer a:hover { color: var(--primary); }
 .search-box button {
     padding: 0 24px;
     border-radius: var(--r-sm);
-    font-weight: 700;
+    font-weight: 600;
 }
 
-/* ---- Premium Result Card ---- */
+/* ---- Result Details ---- */
+.result-area {
+    margin-bottom: 80px;
+}
+
 .result-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -549,10 +537,18 @@ footer a:hover { color: var(--primary); }
 }
 
 .grade-circle {
+    flex-shrink: 0;
     width: 72px;
     height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 28px;
-    border-width: 3px;
+    font-weight: 700;
+    border: 3px solid var(--grade-color, var(--primary));
+    color: var(--grade-color, var(--primary));
+    background: color-mix(in srgb, var(--grade-color, var(--primary)) 10%, transparent);
 }
 
 .grade-description {
@@ -564,6 +560,7 @@ footer a:hover { color: var(--primary); }
 .error-card {
     border-color: rgba(224, 137, 155, 0.4);
 }
+
 
 .status-pill {
     display: inline-flex;

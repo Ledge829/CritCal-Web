@@ -75,19 +75,18 @@
     <a href="about.html">About</a>
 </nav>
 
-<main id="main-content">
+<main id="main-content" class="container">
 
-<section class="search-hero fade-up">
-    <h1>Analyze your build.</h1>
-    <p class="subtitle">Enter your Genshin UID to see a breakdown of your character stats.</p>
-    
-    <div class="search-box">
-        <input type="text" id="uid-input" placeholder="Enter Player UID (e.g., 600000000)" aria-label="Player UID">
-        <button class="btn btn-primary" id="search-btn">Analyze</button>
+    <section class="uid-search-bar fade-up">
+        <div class="search-box">
+            <input type="text" id="uid-input" placeholder="Enter Player UID..." aria-label="Player UID">
+            <button class="btn btn-primary" id="search-btn">Search</button>
+        </div>
+    </section>
+
+    <div id="result-area" class="result-area">
+        <!-- Initial empty state or grid of featured characters -->
     </div>
-</section>
-
-<div id="result-area" class="result-area container"></div>
 
 </main>
 

@@ -12,13 +12,7 @@ async function searchUid() {
     const uid = uidInput.value.trim();
     if (!uid) return;
 
-    // Show loading
-    resultArea.innerHTML = `
-        <div class="result-card loading-card">
-            <div class="spinner"></div>
-            <p>Fetching build data from Enka.Network...</p>
-        </div>
-    `;
+    resultArea.innerHTML = '<div class="result-card loading-card"><div class="spinner"></div><p>Loading...</p></div>';
 
     try {
         const response = await fetch(`${API_BASE}/rate/uid`, {
@@ -28,31 +22,23 @@ async function searchUid() {
         });
 
         const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Failed");
 
-        if (!response.ok) throw new Error(data.error || "Failed to fetch build");
-
-        // Render success card
+        // UI: Grid of characters
         resultArea.innerHTML = `
-            <div class="result-card">
-                <div class="grade-header">
-                    <div class="grade-circle" style="--grade-color: ${data.embed_color}">
-                        ${data.grade}
-                    </div>
-                    <div>
-                        <h2>${data.character}</h2>
-                        <p class="build-title">${data.build_title}</p>
-                    </div>
-                </div>
-                <p class="grade-description">${data.grade_description}</p>
+            <div class="detailed-result">
+                <h3>Showcased Characters</h3>
+                <div class="character-showcase-grid" id="char-grid"></div>
             </div>
         `;
+        
+        // This assumes we'll need to fetch more char details or have them in the initial response
+        // Placeholder for the grid rendering logic
+        const grid = document.getElementById("char-grid");
+        // ... grid population logic ...
+        
     } catch (err) {
-        resultArea.innerHTML = `
-            <div class="result-card error-card">
-                <h3>Error</h3>
-                <p>${err.message}</p>
-            </div>
-        `;
+        resultArea.innerHTML = `<div class="result-card error-card"><h3>Error</h3><p>${err.message}</p></div>`;
     }
 }
 
