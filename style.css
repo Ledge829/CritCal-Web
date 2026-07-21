@@ -477,14 +477,51 @@ footer a:hover { color: var(--primary); }
     opacity: .8;
 }
 
-/* ========================================================== */
-/* HOMEPAGE ---- dashboard, not a landing page ---- */
-/* ========================================================== */
-
-.hero {
-    padding: 44px 6% 8px;
-    max-width: 680px;
+/* ---- Search Hero (Akasha-inspired) ---- */
+.search-hero {
+    padding: 120px 6% 80px;
+    text-align: center;
+    max-width: 600px;
     margin: 0 auto;
+}
+
+.search-hero h1 {
+    font-size: 44px;
+    margin-bottom: 12px;
+}
+
+.search-hero .subtitle {
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    font-size: 16px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    background: var(--surface);
+    padding: 6px;
+    border-radius: var(--r-full);
+    border: 1px solid var(--border);
+}
+
+.search-box input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    padding: 0 20px;
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+}
+
+.search-box button {
+    padding: 12px 28px;
+    border-radius: var(--r-full);
+}
+
+.result-area {
+    margin-bottom: 80px;
 }
 
 .status-pill {
