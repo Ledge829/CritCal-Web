@@ -1340,21 +1340,74 @@ footer a:hover { color: var(--primary); }
     .character-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-@media (min-width: 900px) {
-    .menu-button, .mobile-nav { display: none; }
-    .desktop-nav { display: flex; }
-    .nav-cta { display: inline-flex; }
 
-    .hero { padding: 64px 6% 8px; }
-
-    .dashboard {
-        grid-template-columns: 1.3fr 1fr;
-        align-items: start;
-        padding-top: 26px;
-    }
-
-    .dashboard-main { display: flex; flex-direction: column; gap: 14px; }
-    .dashboard-side { display: flex; flex-direction: column; gap: 14px; }
-    .quick-actions { grid-template-columns: repeat(2, 1fr); }
-    .character-grid { grid-template-columns: repeat(4, 1fr); }
+/* ---- Utility-focused UID Search (Akasha-inspired) ---- */
+.uid-search-bar {
+    padding: 32px 0 24px;
+    max-width: 600px;
+    margin: 0 auto;
 }
+
+.search-box {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+    transition: border-color var(--fast) var(--ease);
+}
+
+.search-box:focus-within {
+    border-color: var(--primary);
+}
+
+.search-box input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 16px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+}
+
+.search-box button {
+    padding: 0 24px;
+    border-radius: var(--r-sm);
+    font-weight: 600;
+}
+
+/* ---- Character Showcase Grid ---- */
+.character-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.character-tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+
+.character-tile:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.character-tile img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+    background: var(--card);
+}
+
+.character-tile strong { font-size: 12px; display: block; }
+
