@@ -81,44 +81,7 @@ if (statusDot && typeof API_BASE !== "undefined") {
         });
 }
 
-
-// ---------- UID Search Logic ----------
-const uidInput = document.getElementById("uid-input");
-const searchBtn = document.getElementById("search-btn");
-const resultArea = document.getElementById("result-area");
-
-async function searchUid() {
-    const uid = uidInput.value.trim();
-    if (!uid) return;
-
-    resultArea.innerHTML = '<div class="loading-card"><div class="spinner"></div><p>Fetching showcase...</p></div>';
-
-    try {
-        const response = await fetch(`${API_BASE}/rate/uid`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ uid }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Failed");
-
-        // UI: Showcase grid
-        resultArea.innerHTML = `
-            <div class="detailed-result">
-                <h3>Showcased Characters</h3>
-                <div class="character-showcase-grid" id="char-grid"></div>
-            </div>
-        `;
-        
-        // This is a placeholder for the logic to populate characters based on Enka's response.
-        // Requires full integration to map character icons.
-        
-    } catch (err) {
-        resultArea.innerHTML = `<div class="result-card error-card"><h3>Error</h3><p>${err.message}</p></div>`;
-    }
-}
-
-searchBtn?.addEventListener("click", searchUid);
-uidInput?.addEventListener("keypress", (e) => { if (e.key === "Enter") searchUid(); });
-
+// (No cursor-tracked hover effects here on purpose -- a mousemove
+// listener firing on every pixel of pointer movement is exactly the
+// kind of "unnecessary JS" the calmer, performance-first design is
+// meant to avoid, and the flatter card style doesn't call for it.)
