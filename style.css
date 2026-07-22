@@ -1472,6 +1472,244 @@ footer a:hover { color: var(--primary); }
     flex-shrink: 0;
 }
 
+/* ---- Skeleton loading cards ---- */
+
+.uid-skeleton-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.uid-skeleton-card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.uid-skeleton-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--card);
+    flex-shrink: 0;
+}
+
+.uid-skeleton-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.uid-skeleton-body .skeleton-line {
+    height: 11px;
+    background: var(--card);
+    border-radius: 4px;
+}
+
+.uid-skeleton-body .skeleton-line:last-of-type { width: 55%; }
+
+.uid-skeleton-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--card);
+    flex-shrink: 0;
+}
+
+/* ---- Search history ---- */
+
+.uid-history-area {
+    margin-top: 10px;
+    display: none;
+}
+
+.uid-history-area.is-visible { display: block; }
+
+.uid-history-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+}
+
+.uid-history-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.uid-history-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    border-radius: var(--r-full);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.uid-history-pill:hover {
+    border-color: var(--primary);
+    color: var(--text);
+}
+
+.uid-history-pill .pill-close {
+    opacity: .4;
+    font-size: 13px;
+    line-height: 1;
+    transition: opacity var(--fast) var(--ease);
+}
+
+.uid-history-pill .pill-close:hover { opacity: 1; }
+
+/* ---- Share button ---- */
+
+.uid-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: var(--r-full);
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.uid-share-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.uid-share-btn svg { width: 12px; height: 12px; }
+
+.uid-share-btn.is-copied {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+/* ---- Character detail hero banner ---- */
+
+.uid-detail-hero {
+    position: relative;
+    padding: 28px 20px 20px;
+    margin: -14px -14px 16px;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    overflow: hidden;
+    text-align: center;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--el-color, var(--primary)) 25%, var(--surface)), var(--surface) 80%);
+}
+
+.uid-detail-hero-portrait {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    border: 3px solid var(--el-color, var(--primary));
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card);
+    position: relative;
+}
+
+.uid-detail-hero-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.uid-detail-hero-portrait .initial-fallback {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--el-color, var(--primary));
+}
+
+.uid-detail-hero h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.uid-detail-hero .build-subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+}
+
+.uid-detail-hero-grade {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px 4px 10px;
+    border-radius: var(--r-full);
+    font-size: 14px;
+    font-weight: 700;
+    border: 2px solid var(--grade-color, var(--primary));
+    color: var(--grade-color, var(--primary));
+    background: color-mix(in srgb, var(--grade-color, var(--primary)) 12%, transparent);
+}
+
+.uid-detail-hero-grade small {
+    font-weight: 500;
+    font-size: 11px;
+    opacity: .8;
+}
+
+/* ---- Stat cards (detail view) ---- */
+
+.uid-detail-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.uid-detail-stat {
+    background: var(--bg-elevated);
+    border-radius: var(--r-sm);
+    padding: 10px 4px;
+    text-align: center;
+}
+
+.uid-detail-stat-icon {
+    width: 16px;
+    height: 16px;
+    margin: 0 auto 4px;
+    color: var(--text-faint);
+}
+
+.uid-detail-stat-value {
+    font-size: 13px;
+    font-weight: 700;
+    display: block;
+}
+
+.uid-detail-stat-label {
+    font-size: 8px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    font-weight: 600;
+}
+
 /* ---- Dedicated UID search page ---- */
 
 .uid-page {
