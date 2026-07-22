@@ -85,3 +85,19 @@ if (statusDot && typeof API_BASE !== "undefined") {
 // listener firing on every pixel of pointer movement is exactly the
 // kind of "unnecessary JS" the calmer, performance-first design is
 // meant to avoid, and the flatter card style doesn't call for it.)
+
+// ---------- Live character count (any page with a #char-count-* element) ----------
+const countElements = document.querySelectorAll('[id^="char-count"]');
+if (countElements.length > 0 && typeof API_BASE !== "undefined") {
+    fetch(`${API_BASE}/characters`)
+        .then((r) => r.json())
+        .then((data) => {
+            const count = data.count;
+            if (count) {
+                countElements.forEach((el) => { el.textContent = count; });
+            }
+        })
+        .catch(() => {
+            // Leave the static fallback ("120+") in place.
+        });
+}
