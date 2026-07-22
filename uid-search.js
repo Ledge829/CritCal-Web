@@ -17,7 +17,6 @@
     var GRADE_COLORS = {
         S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B",
     };
-    var expandedIndex = null;
     var HISTORY_KEY = "critcal_uid_history";
     var MAX_HISTORY = 5;
 
@@ -184,7 +183,6 @@
     // ==========================================================
 
     function renderResults(data) {
-        expandedIndex = null;
         var shareUrl = window.location.origin + window.location.pathname + "?uid=" + encodeURIComponent(data.uid);
         var shareBtnId = "uid-share-btn";
 
@@ -230,7 +228,7 @@
 
         // Card click handlers
         for (var j = 0; j < data.characters.length; j++) {
-            attachCardHandler(j);
+            attachCardHandler(j, data.characters[j]);
         }
     }
 
@@ -254,25 +252,71 @@
         document.body.removeChild(ta);
     }
 
-    function attachCardHandler(index) {
+    function attachCardHandler(index, charData) {
         var card = document.getElementById("uid-card-" + index);
         if (!card) return;
         card.addEventListener("click", function () {
-            if (expandedIndex !== null && expandedIndex !== index) {
-                var prev = document.getElementById("uid-detail-" + expandedIndex);
-                if (prev) prev.classList.remove("is-open");
-            }
-            var detail = document.getElementById("uid-detail-" + index);
-            if (!detail) return;
-            var isOpening = !detail.classList.contains("is-open");
-            detail.classList.toggle("is-open", isOpening);
-            expandedIndex = isOpening ? index : null;
-            if (isOpening) {
-                // Scroll the card's top into view so the user sees the full
-                // expanded content without having to manually scroll up.
-                card.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }
+            showOverlay(charData);
         });
+    }
+
+    // ==========================================================
+    // FULL-SCREEN OVERLAY
+    // ==========================================================
+
+    function showOverlay(c) {
+        // Remove any existing overlay first.
+        var existing = document.querySelector(".uid-overlay");
+        if (existing) existing.remove();
+
+        var overlay = document.createElement("div");
+        overlay.className = "uid-overlay";
+        overlay.innerHTML =
+            '<div class="uid-overlay-card">' +
+                '<button class="uid-overlay-close" aria-label="Close">&times;</button>' +
+                '<div class="uid-overlay-body">' +
+                    detailHeroHtml(c) +
+                '</div>' +
+            '</div>';
+
+        document.body.appendChild(overlay);
+
+        // Trigger the fade-in on the next frame so the browser composites it.
+        requestAnimationFrame(function () {
+            overlay.classList.add("is-open");
+        });
+
+        // Close button.
+        var closeBtn = overlay.querySelector(".uid-overlay-close");
+        if (closeBtn) {
+            closeBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                closeOverlay(overlay);
+            });
+        }
+
+        // Tap on backdrop closes.
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) closeOverlay(overlay);
+        });
+
+        // ESC closes.
+        overlay._keyHandler = function (e) {
+            if (e.key === "Escape") closeOverlay(overlay);
+        };
+        document.addEventListener("keydown", overlay._keyHandler);
+    }
+
+    function closeOverlay(overlay) {
+        if (!overlay) return;
+        overlay.classList.remove("is-open");
+
+        // Clean up the key handler and remove from DOM after the short
+        // fade-out completes.
+        if (overlay._keyHandler) {
+            document.removeEventListener("keydown", overlay._keyHandler);
+        }
+        setTimeout(function () { overlay.remove(); }, 200);
     }
 
     // ==========================================================
@@ -320,9 +364,6 @@
                             '<span class="score-label">Score</span>' +
                         '</div>' +
                     '</div>' +
-                '</div>' +
-                '<div class="uid-char-detail" id="uid-detail-' + index + '">' +
-                    detailHeroHtml(c) +
                 '</div>' +
             '</div>';
     }

@@ -1879,32 +1879,14 @@ footer a:hover { color: var(--primary); }
 .uid-char-score .score-value { font-size: 15px; display: block; font-weight: 700; }
 .uid-char-score .score-label { font-size: 8.5px; }
 
-/* ---- Expandable detail ----
-   Max-height collapses the layout instantly (no transition, so the GPU
-   never touches it -- just a layout toggle, fast on every device). The
-   visual appearance (opacity + transform) is what actually animates, and
-   those ARE GPU-composited for smooth 60 fps. No artificial height cap
-   when open, so every section is reachable without scrolling the card. */
+/* ---- Expandable detail ---- */
 
 .uid-char-detail {
-    border-top: 1px solid var(--border-soft);
-    max-height: 0;
-    overflow: hidden;
-    padding: 0 14px;
-    opacity: 0;
-    transform: translateY(-6px);
-    transition: opacity .25s var(--ease), transform .25s var(--ease),
-                padding .25s var(--ease);
+    display: none;
 }
 
 .uid-char-detail.is-open {
-    max-height: none;
-    overflow: visible;
-    opacity: 1;
-    transform: translateY(0);
-    padding: 14px 14px 18px;
-    transition: opacity .25s var(--ease), transform .25s var(--ease),
-                padding .25s var(--ease);
+    display: block;
 }
 
 .uid-detail-grade {
@@ -2040,4 +2022,72 @@ footer a:hover { color: var(--primary); }
     .uid-char-score { display: block; }
     .uid-mini-top { gap: 14px; }
     .uid-mini-box input { font-size: 13.5px; }
+}
+
+/* ---- Full-screen character detail overlay ----
+   Clicking a character card opens this instead of expanding the card
+   inline. An overlay doesn't shift the layout of cards below it, so
+   there's zero reflow stutter -- the only paint work is the GPU-composited
+   fade-in of the overlay itself. */
+
+.uid-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(5, 7, 11, 0.88);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 16px 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility 0s .25s;
+}
+
+.uid-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .2s ease, visibility 0s 0s;
+}
+
+.uid-overlay-card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-xl);
+    max-width: 500px;
+    width: 100%;
+    margin: auto 0;
+    position: relative;
+    animation: fadeUp .25s ease both;
+}
+
+.uid-overlay-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 19px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+
+.uid-overlay-close:hover {
+    background: var(--card);
+    color: var(--text);
+}
+
+.uid-overlay-body {
+    padding: 0 14px 18px;
 }
