@@ -101,3 +101,21 @@ if (countElements.length > 0 && typeof API_BASE !== "undefined") {
             // Leave the static fallback ("120+") in place.
         });
 }
+
+// ---------- Homepage UID search: redirect to uid-search.html ----------
+const uidInput = document.getElementById("uid-input-home");
+const uidBtn = document.getElementById("uid-search-home-btn");
+
+function goToUidSearch() {
+    const uid = (uidInput.value || "").trim();
+    if (!uid) {
+        uidInput.focus();
+        return;
+    }
+    window.location.href = `uid-search.html?uid=${encodeURIComponent(uid)}`;
+}
+
+uidBtn?.addEventListener("click", goToUidSearch);
+uidInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") goToUidSearch();
+});
