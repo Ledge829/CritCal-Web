@@ -1879,19 +1879,30 @@ footer a:hover { color: var(--primary); }
 .uid-char-score .score-value { font-size: 15px; display: block; font-weight: 700; }
 .uid-char-score .score-label { font-size: 8.5px; }
 
-/* ---- Expandable detail ---- */
+/* ---- Expandable detail ----
+   Uses opacity + transform instead of max-height for the animation so the
+   browser can GPU-composite every frame (max-height forces a layout
+   recalculation on every animation step, which is noticeably janky on
+   mid-range mobile devices). No artificial height cap either -- the full
+   detail content is always reachable without scrolling the parent card. */
 
 .uid-char-detail {
     border-top: 1px solid var(--border-soft);
-    padding: 0 14px 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height .35s var(--ease), padding .35s var(--ease);
+    padding: 0 14px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity .25s var(--ease), transform .25s var(--ease),
+                padding .25s var(--ease), visibility 0s .25s;
 }
 
 .uid-char-detail.is-open {
-    max-height: 900px;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
     padding: 14px 14px 18px;
+    transition: opacity .25s var(--ease), transform .25s var(--ease),
+                padding .25s var(--ease), visibility 0s 0s;
 }
 
 .uid-detail-grade {

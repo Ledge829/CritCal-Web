@@ -268,7 +268,9 @@
             detail.classList.toggle("is-open", isOpening);
             expandedIndex = isOpening ? index : null;
             if (isOpening) {
-                detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                // Scroll the card's top into view so the user sees the full
+                // expanded content without having to manually scroll up.
+                card.scrollIntoView({ behavior: "smooth", block: "nearest" });
             }
         });
     }
