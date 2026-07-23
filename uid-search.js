@@ -305,6 +305,7 @@
                         name: c.character,
                         element: c.element,
                         portrait: c.portrait,
+                        splash: c.splash,
                         key: c.character ? c.character.toLowerCase().replace(/\s+/g, "") : "",
                     };
                     var blob = await window.generateRatingCard(c, charInfo);

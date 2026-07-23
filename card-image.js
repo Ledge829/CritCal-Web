@@ -1,37 +1,50 @@
 /*
-Promotional key-art build card for CritCal.
-
-NOT a dashboard — this is character-first promotional art. The character
-portrait dominates (50%+ of the canvas), the element gradient sets the mood,
-and text overlays the artwork naturally rather than sitting in boxes.
-
-The design goal: even without reading a single number, you know exactly
-which character the card is for — the portrait and element atmosphere do
-that work.
-
-Canvas: 660 × 460 at 1x (drawn at 2x for retina). Slightly taller than
-a banner — closer to a character-reveal card aspect ratio.
-
-Usage:
-    const blob = await window.generateRatingCard(resultData, charInfo);
-*/
+ * Build rating card for CritCal -- landscape showcase layout.
+ *
+ * LAYOUT:
+ *   LEFT  (~55%) — structured build information
+ *   RIGHT (~45%) — character gacha splash art, emerging from
+ *                  an element-colored atmosphere via a gradient fade
+ *
+ * The splash art is the visual anchor; the data reads cleanly
+ * on the left with strong typographic hierarchy. Nothing overlaps.
+ *
+ * Canvas: 1000 × 540 at 1x (drawn at 2x for retina).
+ *
+ * Inspired by the Akasha.cv philosophy of art-as-composition:
+ * the character portrait drives the card's atmosphere, and the
+ * data is cleanly layered alongside it — not floating, not beside
+ * it as a separate panel, but sharing the same element-toned canvas.
+ */
 
 (function () {
     "use strict";
 
-    var W = 660;
-    var H = 460;
+    var W = 1000;
+    var H = 540;
     var SCALE = 2;
 
-    // Element color profiles
+    var SPLASH_LEFT = 540;    // right panel starts here (54%)
+    var PAD_LEFT = 30;         // left panel content padding
+    var CONTENT_W = SPLASH_LEFT - PAD_LEFT * 2;  // ~480px
+    var ATMO_FADE = 120;       // width of the art fade-in gradient
+
+    // ==========================================================
+    // ELEMENT ATMOSPHERE PROFILES
+    //
+    // Each element gets a distinct visual mood. The `hex` is the
+    // bright accent color; `dark` is the deep atmospheric tone
+    // used as the card's base background.
+    // ==========================================================
+
     var EL = {
-        pyro:   { hex: "#E0785C", dark: "#3D1E17" },
-        hydro:  { hex: "#5B9BD6", dark: "#1A2B3E" },
-        anemo:  { hex: "#6BC7AE", dark: "#1C332C" },
-        electro:{ hex: "#B18FE0", dark: "#2E1F3E" },
-        dendro: { hex: "#97BE58", dark: "#263317" },
-        cryo:   { hex: "#83C6DE", dark: "#1C323B" },
-        geo:    { hex: "#D6B96C", dark: "#3A311B" },
+        pyro:   { hex: "#E0785C", dark: "#1A0E0A" },
+        hydro:  { hex: "#5B9BD6", dark: "#0A141E" },
+        anemo:  { hex: "#6BC7AE", dark: "#0A1814" },
+        electro:{ hex: "#B18FE0", dark: "#0F0A1A" },
+        dendro: { hex: "#97BE58", dark: "#0F1408" },
+        cryo:   { hex: "#83C6DE", dark: "#0A1418" },
+        geo:    { hex: "#D6B96C", dark: "#14100A" },
     };
 
     function el(key) {
@@ -52,131 +65,46 @@ Usage:
         var num = Number(val);
         if (key === "er") return num.toFixed(0) + "%";
         if (num >= 10000) return Math.round(num / 1000) + "k";
-        if (num >= 1000) return Math.round(num).toLocaleString();
-        return num.toFixed(0);
+        return Math.round(num).toLocaleString();
     }
 
-    // ==========================================================
-    // PORTRAIT — large, dominant, fades into gradient
-    // ==========================================================
-
-    function drawPortrait(ctx, cx, cy, radius, charInfo) {
-        return new Promise(function (resolve) {
-            var info = charInfo || {};
-            var initial = (info.name || "?").charAt(0).toUpperCase();
-            var url = info.portrait;
-            var e = el(info.element);
-            var c = e.hex;
-
-            if (!url) {
-                drawInitial(ctx, cx, cy, radius, initial, c);
-                resolve();
-                return;
-            }
-
-            var img = new Image();
-            img.crossOrigin = "anonymous";
-
-            img.onload = function () {
-                // Soft glowing orb behind portrait
-                var glow = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius + 40);
-                glow.addColorStop(0, c + "30");
-                glow.addColorStop(0.6, c + "15");
-                glow.addColorStop(1, "rgba(0,0,0,0)");
-                ctx.fillStyle = glow;
-                ctx.fillRect(cx - radius - 60, cy - radius - 60, radius * 2 + 120, radius * 2 + 120);
-
-                // Draw portrait clipped to circle
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.clip();
-                ctx.drawImage(img, cx - radius, cy - radius, radius * 2, radius * 2);
-                ctx.restore();
-
-                // Very subtle ring
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius - 1, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.strokeStyle = c + "30";
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                resolve();
-            };
-
-            img.onerror = function () {
-                drawInitial(ctx, cx, cy, radius, initial, c);
-                resolve();
-            };
-
-            img.src = url;
-        });
-    }
-
-    function drawInitial(ctx, cx, cy, radius, letter, color) {
-        var glow = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius + 40);
-        glow.addColorStop(0, color + "30");
-        glow.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = glow;
-        ctx.fillRect(cx - radius - 60, cy - radius - 60, radius * 2 + 120, radius * 2 + 120);
-
-        ctx.save();
+    function roundRectPath(ctx, x, y, w, h, r) {
+        r = Math.min(r, w / 2, h / 2);
         ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.arcTo(x + w, y, x + w, y + r, r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+        ctx.lineTo(x + r, y + h);
+        ctx.arcTo(x, y + h, x, y + h - r, r);
+        ctx.lineTo(x, y + r);
+        ctx.arcTo(x, y, x + r, y, r);
         ctx.closePath();
-        ctx.fillStyle = "rgba(255,255,255,0.06)";
-        ctx.fill();
-        ctx.strokeStyle = color + "55";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.restore();
-
-        ctx.fillStyle = color;
-        ctx.font = "500 48px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(letter, cx, cy + 2);
     }
 
-    // ==========================================================
-    // TIER BADGE — subtle chip, supports the art
-    // ==========================================================
-
-    var TIER_STYLE = {
-        "bis":             { bg: "rgba(214,185,108,0.25)", fg: "#D6B96C" },
-        "secondary":       { bg: "rgba(91,155,214,0.25)",  fg: "#5B9BD6" },
-        "f2p":             { bg: "rgba(107,199,174,0.25)", fg: "#6BC7AE" },
-        "niche":           { bg: "rgba(177,143,224,0.25)", fg: "#B18FE0" },
-        "unlisted":        { bg: "rgba(152,162,179,0.25)", fg: "#98A2B3" },
-        "unrecognized":    { bg: "rgba(224,137,155,0.25)", fg: "#E0899B" },
-        "type mismatch":   { bg: "rgba(224,137,155,0.25)", fg: "#E0899B" },
-        "hybrid":          { bg: "rgba(152,162,179,0.25)", fg: "#98A2B3" },
-        "fragmented":      { bg: "rgba(224,137,155,0.25)", fg: "#E0899B" },
-    };
-
-    function drawTier(ctx, label, x, y) {
-        var key = (label || "").toLowerCase();
-        var t = TIER_STYLE[key] || TIER_STYLE.unlisted;
-        var w = 46, h = 16;
+    function drawTierBadge(ctx, label, x, y) {
+        if (!label) return;
+        var key = (label + "").toLowerCase();
+        var styles = {
+            bis:             { bg: "rgba(214,185,108,0.22)", fg: "#D6B96C" },
+            secondary:       { bg: "rgba(91,155,214,0.22)",  fg: "#5B9BD6" },
+            f2p:             { bg: "rgba(107,199,174,0.22)", fg: "#6BC7AE" },
+            niche:           { bg: "rgba(177,143,224,0.22)", fg: "#B18FE0" },
+            unlisted:        { bg: "rgba(152,162,179,0.22)", fg: "#98A2B3" },
+            unrecognized:    { bg: "rgba(224,137,155,0.22)", fg: "#E0899B" },
+            "type mismatch": { bg: "rgba(224,137,155,0.22)", fg: "#E0899B" },
+            hybrid:          { bg: "rgba(152,162,179,0.22)", fg: "#98A2B3" },
+            fragmented:      { bg: "rgba(224,137,155,0.22)", fg: "#E0899B" },
+        };
+        var t = styles[key] || styles.unlisted;
+        var w = 46, h = 18;
         ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x + 8, y);
-        ctx.lineTo(x + w - 8, y);
-        ctx.arcTo(x + w, y, x + w, y + 8, 8);
-        ctx.lineTo(x + w, y + h - 8);
-        ctx.arcTo(x + w, y + h, x + w - 8, y + h, 8);
-        ctx.lineTo(x + 8, y + h);
-        ctx.arcTo(x, y + h, x, y + h - 8, 8);
-        ctx.lineTo(x, y + 8);
-        ctx.arcTo(x, y, x + 8, y, 8);
-        ctx.closePath();
+        roundRectPath(ctx, x, y, w, h, 9);
         ctx.fillStyle = t.bg;
         ctx.fill();
-
         ctx.fillStyle = t.fg;
-        ctx.font = "700 8px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "700 8.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(label, x + w / 2, y + h / 2 + 1);
@@ -193,7 +121,6 @@ Usage:
         canvas.height = H * SCALE;
         var ctx = canvas.getContext("2d");
         ctx.scale(SCALE, SCALE);
-        ctx.textBaseline = "top";
 
         var info = charInfo || {};
         var e = el(info.element);
@@ -207,235 +134,270 @@ Usage:
             gradeColor = { S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B" }[gl] || "#5B9BD6";
         }
 
-        var name = result.character || "Unknown";
+        var charName = result.character || "Unknown";
         var buildTitle = result.build_title || "";
         var grade = result.grade || "?";
         var score = result.overall_score != null ? result.overall_score : "--";
         var cv = result.crit_value != null ? result.crit_value : "--";
         var cr = result.crit_rate != null ? result.crit_rate : "--";
         var cd = result.crit_dmg != null ? result.crit_dmg : "--";
+        var splashUrl = info.splash || null;
+        var stats = result.stats_used || {};
+
+        ctx.textBaseline = "top";
 
         // ==========================================================
-        // 1. BACKGROUND — element gradient
+        // 1. BACKGROUND — deep void base + element atmosphere
         // ==========================================================
 
-        // Base dark
+        // Solid dark base
         ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // Element atmosphere — large soft radial gradient
-        var atmos = ctx.createRadialGradient(W / 2, H * 0.3, 30, W / 2, H * 0.3, H * 0.75);
-        atmos.addColorStop(0, eHex + "40");
-        atmos.addColorStop(0.4, eHex + "20");
-        atmos.addColorStop(0.7, eDark + "AA");
+        // Element atmosphere — a large radial glow centered near the
+        // join between the info panel and splash art, so the same
+        // lighting falls across both halves of the card.
+        var atmos = ctx.createRadialGradient(
+            SPLASH_LEFT - 80, H * 0.4, 20,
+            SPLASH_LEFT - 80, H * 0.4, H * 0.95
+        );
+        atmos.addColorStop(0, eHex + "30");
+        atmos.addColorStop(0.35, eHex + "15");
+        atmos.addColorStop(0.65, eDark + "AA");
         atmos.addColorStop(1, "#080A0E");
         ctx.fillStyle = atmos;
         ctx.fillRect(0, 0, W, H);
 
         // ==========================================================
-        // 2. PORTRAIT — large, dominant
+        // 2. SPLASH ART (right side) — with gradient blend into bg
         // ==========================================================
 
-        var portRadius = 150;
-        var portCX = W / 2;
-        var portCY = Math.round(H * 0.36);
-        await drawPortrait(ctx, portCX, portCY, portRadius, info);
+        if (splashUrl) {
+            var img = await new Promise(function (resolve) {
+                var i = new Image();
+                i.crossOrigin = "anonymous";
+                i.onload = function () { resolve(i); };
+                i.onerror = function () { resolve(null); };
+                i.src = splashUrl;
+            });
 
-        // ==========================================================
-        // 3. BOTTOM VIGNETTE — dark fade for text readability
-        // ==========================================================
+            if (img) {
+                // Cover: fill the right panel (470 x 540) while
+                // maintaining aspect ratio, centering the character.
+                var pw = W - SPLASH_LEFT;   // 460
+                var ph = H;                 // 540
+                var imgScale = Math.max(pw / img.naturalWidth, ph / img.naturalHeight);
+                var sw = pw / imgScale;
+                var sh = ph / imgScale;
+                var sx = (img.naturalWidth - sw) / 2;
+                var sy = (img.naturalHeight - sh) / 2;
 
-        var vig = ctx.createLinearGradient(0, H * 0.48, 0, H);
-        vig.addColorStop(0, "rgba(8,10,14,0)");
-        vig.addColorStop(0.35, "rgba(8,10,14,0.6)");
-        vig.addColorStop(0.65, "rgba(8,10,14,0.92)");
-        vig.addColorStop(1, "#080A0E");
-        ctx.fillStyle = vig;
-        ctx.fillRect(0, 0, W, H);
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(SPLASH_LEFT, 0, pw, ph);
+                ctx.clip();
+                ctx.drawImage(img, sx, sy, sw, sh, SPLASH_LEFT, 0, pw, ph);
+                ctx.restore();
 
-        // ==========================================================
-        // 4. TOP ACCENT — thin element glow line
-        // ==========================================================
-
-        ctx.shadowColor = eHex;
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = eHex;
-        ctx.fillRect(PAD, 0, W - PAD * 2, 2.5);
-        ctx.shadowBlur = 0;
-
-        // ==========================================================
-        // 5. CHARACTER NAME + TITLE
-        // ==========================================================
-
-        var PAD = 28;
-        var leftX = PAD;
-
-        ctx.textAlign = "left";
-        ctx.shadowColor = "rgba(0,0,0,0.6)";
-        ctx.shadowBlur = 6;
-
-        // Name — prominent
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "600 26px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(name, leftX, 260);
-
-        // Rarity stars + element tag inline
-        var rarity = info.rarity || 5;
-        var starStr = "";
-        for (var si = 0; si < rarity; si++) starStr += "★";
-        ctx.fillStyle = rarity >= 5 ? "#D6B96C" : "#B79EDB";
-        ctx.font = "13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        var nameW = ctx.measureText(name).width;
-        ctx.fillText(starStr, leftX + nameW + 10, 263);
-
-        // Element + weapon type tag
-        if (info.element) {
-            var tagX = leftX + nameW + 10 + ctx.measureText(starStr).width + 12;
-            ctx.fillStyle = eHex;
-            ctx.font = "400 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(capitalize(info.element), tagX, 267);
-        }
-
-        // Build title
-        if (buildTitle) {
-            ctx.fillStyle = "rgba(255,255,255,0.5)";
-            ctx.font = "400 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(buildTitle, leftX, 295);
-        }
-
-        ctx.shadowBlur = 0;
-
-        // ==========================================================
-        // 6. GRADE + SCORE — clean, minimal
-        // ==========================================================
-
-        var gradeY = 260;
-
-        // Grade circle on the right
-        var gCX = W - PAD - 36;
-        var gCY = gradeY + 4;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(gCX, gCY + 36, 36, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fillStyle = gradeColor + "20";
-        ctx.fill();
-        ctx.strokeStyle = gradeColor;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-        ctx.fillStyle = gradeColor;
-        ctx.font = "700 30px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(grade, gCX, gCY + 36 + 1);
-        ctx.textBaseline = "top";
-        ctx.restore();
-
-        // Score + CV above/right of grade
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "600 20px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(String(score), gCX - 50, gradeY);
-
-        ctx.fillStyle = "rgba(255,255,255,0.4)";
-        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("SCORE", gCX - 50, gradeY + 26);
-
-        ctx.fillStyle = "rgba(255,255,255,0.6)";
-        ctx.font = "400 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("CV " + cv, gCX - 50, gradeY + 44);
-
-        // ==========================================================
-        // 7. CRIT RATIO — subtle
-        // ==========================================================
-
-        ctx.textAlign = "left";
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("CR " + cr + "%  /  CD " + cd + "%", leftX, 322);
-
-        // ==========================================================
-        // 8. STATS — single line, compact
-        // ==========================================================
-
-        var stats = result.stats_used || {};
-        var statDefs = [
-            { key: "hp",  label: "HP",  ikey: "hp" },
-            { key: "atk", label: "ATK", ikey: "atk" },
-            { key: "def", label: "DEF", ikey: "def" },
-            { key: "elemental_mastery", label: "EM",  ikey: "em" },
-            { key: "energy_recharge",   label: "ER",  ikey: "er" },
-        ];
-        var hasAnyStat = statDefs.some(function (s) { return stats[s.key] != null && stats[s.key] > 0; });
-
-        if (hasAnyStat) {
-            var statY = 348;
-            ctx.textAlign = "left";
-            var spacing = 0;
-
-            for (var si = 0; si < statDefs.length; si++) {
-                var sd = statDefs[si];
-                var val = stats[sd.key];
-                var display = (val != null && val > 0) ? fmtStat(sd.ikey, val) : null;
-                if (display === null) continue;
-
-                // Each stat block: value + label
-                var block = sd.label + "  " + display;
-                ctx.fillStyle = "rgba(255,255,255,0.5)";
-                ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                ctx.fillText(block, leftX + spacing, statY);
-
-                spacing += ctx.measureText(block + "     ").width;
+                // Gradient mask — left edge of the art fades into the
+                // dark background so the character "emerges" from the
+                // atmosphere rather than sitting in a box.
+                var fadeGrad = ctx.createLinearGradient(SPLASH_LEFT, 0, SPLASH_LEFT + ATMO_FADE, 0);
+                fadeGrad.addColorStop(0,    "rgba(8,10,14,1)");
+                fadeGrad.addColorStop(0.4,  "rgba(8,10,14,0.5)");
+                fadeGrad.addColorStop(0.7,  "rgba(8,10,14,0.15)");
+                fadeGrad.addColorStop(1,    "rgba(8,10,14,0)");
+                ctx.fillStyle = fadeGrad;
+                ctx.fillRect(SPLASH_LEFT, 0, ATMO_FADE, ph);
             }
         }
 
         // ==========================================================
-        // 9. EQUIPMENT — minimal, low-opacity
+        // 3. LEFT PANEL — build information
         // ==========================================================
 
-        var eqY = 385;
+        ctx.textAlign = "left";
+
+        // ---- 3a. GRADE + SCORE ----
+        var y = 30;
+        ctx.fillStyle = gradeColor;
+        ctx.font = "700 48px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(grade, PAD_LEFT, y);
+
+        // Score beside grade
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "600 20px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(String(score), PAD_LEFT + 60, y + 8);
+
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.font = "400 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("OVERALL SCORE", PAD_LEFT + 60, y + 32);
+
+        // ---- 3b. CHARACTER NAME ----
+        y = 90;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "600 24px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(charName, PAD_LEFT, y);
+
+        // ---- 3c. BUILD TITLE ----
+        if (buildTitle) {
+            y = 118;
+            ctx.fillStyle = "rgba(255,255,255,0.5)";
+            ctx.font = "400 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillText(buildTitle, PAD_LEFT, y);
+        }
+
+        // ---- 3d. ELEMENT BADGE + RARITY STARS ----
+        y = buildTitle ? 142 : 128;
+        var elemLabel = capitalize(info.element || "");
+
+        if (elemLabel) {
+            var badgeW = Math.max(ctx.measureText(elemLabel).width + 16, 50);
+            roundRectPath(ctx, PAD_LEFT, y, badgeW, 20, 10);
+            ctx.fillStyle = eHex + "22";
+            ctx.fill();
+
+            ctx.fillStyle = eHex;
+            ctx.font = "600 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.textBaseline = "top";
+            ctx.fillText(elemLabel, PAD_LEFT + 8, y + 5);
+        }
+
+        // Rarity stars
+        var starStr = "";
+        var rarity = info.rarity || 4;
+        for (var si = 0; si < rarity; si++) starStr += "★";
+        if (starStr) {
+            ctx.fillStyle = rarity >= 5 ? "#D6B96C" : "#B79EDB";
+            ctx.font = "12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.textBaseline = "top";
+            ctx.fillText(starStr, PAD_LEFT + (elemLabel ? badgeW + 10 : 0), y + 4);
+        }
+
+        // ---- 3e. ACCENT RULE ----
+        var ruleY = (buildTitle ? 142 : 128) + 34;
+        ctx.save();
+        ctx.strokeStyle = eHex + "30";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(PAD_LEFT, ruleY);
+        ctx.lineTo(PAD_LEFT + CONTENT_W, ruleY);
+        ctx.stroke();
+        ctx.restore();
+
+        // ---- 3f. CRIT RATIO ----
+        var cy = ruleY + 16;
+
+        // Label
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillText("CRIT RATIO", PAD_LEFT, cy);
+
+        // CR / CD values
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "600 16px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        var critLine = cr + "% / " + cd + "%";
+        ctx.fillText(critLine, PAD_LEFT, cy + 14);
+
+        // CV — right-aligned
+        ctx.textAlign = "right";
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.font = "400 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("CV " + cv, PAD_LEFT + CONTENT_W, cy + 16);
+        ctx.textAlign = "left";
+
+        // ---- 3g. STATS ----
+        var sy = cy + 50;
+
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("STATS", PAD_LEFT, sy);
+
+        // Build a clean array of non-zero stats
+        var statDefs = [
+            { key: "hp",  label: "HP",  fmtKey: "hp" },
+            { key: "atk", label: "ATK", fmtKey: "atk" },
+            { key: "def", label: "DEF", fmtKey: "def" },
+            { key: "elemental_mastery", label: "EM", fmtKey: "em" },
+            { key: "energy_recharge",   label: "ER", fmtKey: "er" },
+        ];
+        var entries = [];
+        for (var i = 0; i < statDefs.length; i++) {
+            var sd = statDefs[i];
+            var val = stats[sd.key];
+            if (val != null && val > 0) {
+                entries.push({ label: sd.label, value: fmtStat(sd.fmtKey, val) });
+            }
+        }
+
+        var statTop = sy + 16;
+        var halfCol = CONTENT_W / 2;
+        var statLabelW = 35;  // fixed width for the label column
+
+        for (var j = 0; j < entries.length; j++) {
+            var col = j % 2;
+            var row = (j / 2) | 0;
+            var ex = PAD_LEFT + (col === 0 ? 0 : halfCol);
+            var ey = statTop + row * 22;
+
+            // Label
+            ctx.fillStyle = "rgba(255,255,255,0.5)";
+            ctx.font = "400 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.textBaseline = "top";
+            ctx.fillText(entries[j].label, ex, ey);
+
+            // Value
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "600 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillText(entries[j].value, ex + statLabelW, ey);
+        }
+
+        // ---- 3h. EQUIPMENT ----
+        var statRows = Math.ceil(entries.length / 2);
+        var eqTop = statTop + statRows * 22 + 14;
+
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("EQUIPMENT", PAD_LEFT, eqTop);
+
+        var eqY = eqTop + 16;
         var hasWeapon = result.weapon_name;
         var hasSet = result.primary_artifact_set_name;
 
-        if (hasWeapon || hasSet) {
-            ctx.textAlign = "left";
-
-            if (hasWeapon) {
-                var wr = result.weapon_refinement ? " R" + result.weapon_refinement : "";
-                ctx.fillStyle = "rgba(255,255,255,0.6)";
-                ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                ctx.fillText(result.weapon_name + wr, leftX, eqY);
-
-                if (result.weapon_tier) {
-                    drawTier(ctx, result.weapon_tier, W - PAD - 46, eqY - 2);
-                }
-                eqY += 19;
+        if (hasWeapon) {
+            var wr = result.weapon_refinement ? "  R" + result.weapon_refinement : "";
+            ctx.fillStyle = "rgba(255,255,255,0.65)";
+            ctx.font = "400 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillText(result.weapon_name + wr, PAD_LEFT, eqY);
+            if (result.weapon_tier) {
+                drawTierBadge(ctx, result.weapon_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
             }
+            eqY += 22;
+        }
 
-            if (hasSet) {
-                var sc = result.primary_artifact_set_count ? result.primary_artifact_set_count + "pc" : "";
-                ctx.fillStyle = "rgba(255,255,255,0.6)";
-                ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                ctx.fillText(result.primary_artifact_set_name + (sc ? "  " + sc : ""), leftX, eqY);
-
-                if (result.artifact_tier) {
-                    drawTier(ctx, result.artifact_tier, W - PAD - 46, eqY - 2);
-                }
+        if (hasSet) {
+            var setLabel = result.primary_artifact_set_name;
+            if (result.primary_artifact_set_count) {
+                setLabel += "  " + result.primary_artifact_set_count + "pc";
+            }
+            ctx.fillStyle = "rgba(255,255,255,0.65)";
+            ctx.font = "400 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillText(setLabel, PAD_LEFT, eqY);
+            if (result.artifact_tier) {
+                drawTierBadge(ctx, result.artifact_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
             }
         }
 
-        // ==========================================================
-        // 10. FOOTER — barely there
-        // ==========================================================
-
+        // ---- 3i. FOOTER ----
         ctx.textAlign = "center";
-        ctx.fillStyle = "rgba(255,255,255,0.15)";
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
         ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("CritCal  ·  trycritcal.vercel.app", W / 2, H - 16);
+        ctx.textBaseline = "bottom";
+        ctx.fillText("CritCal  ·  Open Source  ·  Built by the community", W / 2, H - 18);
 
         // ==========================================================
-        // OUTPUT
+        // 4. OUTPUT
         // ==========================================================
 
         return new Promise(function (resolve) {
