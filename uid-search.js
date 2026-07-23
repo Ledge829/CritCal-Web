@@ -1,8 +1,8 @@
-// API_BASE from script.js, icon/color helpers from icons.js,
-// portraitHtml/portraitInnerHtml from portraits.js.
+// API_BASE, escapeHtml, capitalize, GRADE_COLORS, tierClass from script.js,
+// icon/color helpers from icons.js, portraitHtml/portraitInnerHtml from portraits.js.
 //
 // eslint-disable-next-line no-unused-vars
-/* global API_BASE, elementIcon, elementColor, rarityStars, UI_ICONS, STAT_ICONS, portraitInnerHtml, ELEMENT_COLORS */
+/* global API_BASE, escapeHtml, capitalize, GRADE_COLORS, tierClass, generateRatingCard, elementIcon, elementColor, rarityStars, UI_ICONS, STAT_ICONS, portraitInnerHtml, ELEMENT_COLORS */
 
 (function () {
     "use strict";
@@ -14,9 +14,7 @@
 
     if (!uidInput || !uidBtn || !resultArea) return;
 
-    var GRADE_COLORS = {
-        S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B",
-    };
+    // GRADE_COLORS from script.js (global)
     var HISTORY_KEY = "critcal_uid_history";
     var MAX_HISTORY = 5;
 
@@ -55,9 +53,9 @@
             '<div class="uid-history-pills">';
         for (var i = 0; i < h.length; i++) {
             html +=
-                '<span class="uid-history-pill" data-uid="' + escHtml(h[i]) + '">' +
-                    escHtml(h[i]) +
-                    ' <span class="pill-close" data-clear="' + escHtml(h[i]) + '">&times;</span>' +
+                '<span class="uid-history-pill" data-uid="' + escapeHtml(h[i]) + '">' +
+                    escapeHtml(h[i]) +
+                    ' <span class="pill-close" data-clear="' + escapeHtml(h[i]) + '">&times;</span>' +
                 '</span>';
         }
         html +=
@@ -174,7 +172,7 @@
         resultArea.innerHTML =
             '<div class="uid-error-card">' +
                 '<h3>Couldn&#8217;t load that showcase</h3>' +
-                '<p>' + escHtml(message) + '</p>' +
+                '<p>' + escapeHtml(message) + '</p>' +
             '</div>';
     }
 
@@ -188,7 +186,7 @@
 
         var html =
             '<div class="uid-summary-bar">' +
-                '<span>UID <strong>' + escHtml(data.uid) + '</strong> &middot; ' +
+                '<span>UID <strong>' + escapeHtml(data.uid) + '</strong> &middot; ' +
                 data.count + " character" + (data.count !== 1 ? "s" : "") + '</span>' +
                 '<span style="display:flex;gap:6px;align-items:center;">' +
                     '<button class="uid-share-btn" id="' + shareBtnId + '">' +
@@ -295,6 +293,36 @@
             });
         }
 
+        // Download image button.
+        var dlBtn = overlay.querySelector(".uid-dl-btn");
+        if (dlBtn) {
+            dlBtn.addEventListener("click", async function (e) {
+                e.stopPropagation();
+                dlBtn.disabled = true;
+                dlBtn.textContent = "Generating...";
+                try {
+                    var charInfo = {
+                        name: c.character,
+                        element: c.element,
+                        portrait: c.portrait,
+                        key: c.character ? c.character.toLowerCase().replace(/\s+/g, "") : "",
+                    };
+                    var blob = await window.generateRatingCard(c, charInfo);
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement("a");
+                    a.href = url;
+                    a.download = (c.character || "character") + "-rating.png";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    console.error("Card generation failed:", err);
+                } finally {
+                    dlBtn.disabled = false;
+                    dlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Image';
+                }
+            });
+        }
+
         // Tap on backdrop closes.
         overlay.addEventListener("click", function (e) {
             if (e.target === overlay) closeOverlay(overlay);
@@ -343,19 +371,19 @@
                 '<div class="uid-char-summary">' +
                     '<span class="uid-char-avatar">' + avatarHtml + '</span>' +
                     '<div class="uid-char-info">' +
-                        '<strong>' + escHtml(c.character) + '</strong>' +
+                        '<strong>' + escapeHtml(c.character) + '</strong>' +
                         '<span class="uid-char-meta">' +
                             (c.element
                                 ? '<span class="element-badge" style="--el-color:' + color + '">' +
-                                   elementIcon(c.element) + cap(c.element) + '</span>'
+                                   elementIcon(c.element) + capitalize(c.element) + '</span>'
                                 : "") +
                             (c.rarity ? rarityStars(c.rarity) : "") +
-                            '<span class="character-roles">' + escHtml(c.build_title || "") + '</span>' +
+                            '<span class="character-roles">' + escapeHtml(c.build_title || "") + '</span>' +
                         '</span>' +
                     '</div>' +
                     '<div class="uid-char-stats">' +
                         '<div class="uid-char-grade" style="--grade-color:' + gradeColor + '">' +
-                            escHtml(c.grade || "?") +
+                            escapeHtml(c.grade || "?") +
                         '</div>' +
                         '<div class="uid-char-score">' +
                             '<span class="score-value" style="color:' + gradeColor + '">' +
@@ -387,7 +415,7 @@
                 portrait: c.portrait,
             });
         } else {
-            portraitHtml = '<span class="initial-fallback">' + escHtml(initial) + '</span>';
+            portraitHtml = '<span class="initial-fallback">' + escapeHtml(initial) + '</span>';
         }
 
         // Stats row (only show stats that are > 0)
@@ -419,7 +447,7 @@
         // Section title helper
         function sectionTitle(icon, label) {
             return '<div class="result-section-title" style="font-size:10.5px;margin-bottom:7px;">' +
-                icon + escHtml(label) + '</div>';
+                icon + escapeHtml(label) + '</div>';
         }
 
         // Equipment
@@ -428,22 +456,22 @@
             eqHtml = '<div style="margin-bottom:12px;">' + sectionTitle(UI_ICONS.gem, "Equipment");
             if (c.weapon_name) {
                 var wBadge = c.weapon_tier
-                    ? '<span class="tier-badge ' + tierCls(c.weapon_tier) + '">' + escHtml(c.weapon_tier) + '</span>'
+                    ? '<span class="tier-badge ' + tierClass(c.weapon_tier) + '">' + escapeHtml(c.weapon_tier) + '</span>'
                     : "";
                 eqHtml +=
                     '<div class="uid-eq-row">' +
-                        '<span><strong>' + escHtml(c.weapon_name) + '</strong>' +
+                        '<span><strong>' + escapeHtml(c.weapon_name) + '</strong>' +
                         '<span>Weapon' + (c.weapon_refinement ? ' &middot; R' + c.weapon_refinement : "") +
                         '</span></span>' + wBadge +
                     '</div>';
             }
             if (c.primary_artifact_set_name) {
                 var aBadge = c.artifact_tier
-                    ? '<span class="tier-badge ' + tierCls(c.artifact_tier) + '">' + escHtml(c.artifact_tier) + '</span>'
+                    ? '<span class="tier-badge ' + tierClass(c.artifact_tier) + '">' + escapeHtml(c.artifact_tier) + '</span>'
                     : "";
                 eqHtml +=
                     '<div class="uid-eq-row">' +
-                        '<span><strong>' + escHtml(c.primary_artifact_set_name) + '</strong>' +
+                        '<span><strong>' + escapeHtml(c.primary_artifact_set_name) + '</strong>' +
                         '<span>Artifacts &middot; ' + (c.primary_artifact_set_count || "?") + 'pc' +
                         (c.has_four_piece_set_bonus ? ' &middot; 4pc active' : "") +
                         '</span></span>' + aBadge +
@@ -458,7 +486,7 @@
             benchHtml = '<div class="uid-detail-benchmarks">' +
                 sectionTitle(UI_ICONS.shield, "Benchmarks") + '<ul>';
             for (var b = 0; b < c.benchmark_status.length; b++) {
-                benchHtml += '<li>' + escHtml(c.benchmark_status[b]) + '</li>';
+                benchHtml += '<li>' + escapeHtml(c.benchmark_status[b]) + '</li>';
             }
             benchHtml += '</ul></div>';
         }
@@ -470,7 +498,7 @@
                 sectionTitle(UI_ICONS.sparkle, "Recommendations") +
                 '<ul class="uid-detail-recs">';
             for (var r = 0; r < c.recommendations.length; r++) {
-                recsHtml += '<li>' + escHtml(c.recommendations[r]) + '</li>';
+                recsHtml += '<li>' + escapeHtml(c.recommendations[r]) + '</li>';
             }
             recsHtml += '</ul></div>';
         }
@@ -481,11 +509,11 @@
                 '<div class="uid-detail-hero-portrait" style="border-color:' + elColor + '">' +
                     portraitHtml +
                 '</div>' +
-                '<h3>' + escHtml(c.character) + '</h3>' +
-                (c.build_title ? '<p class="build-subtitle">' + escHtml(c.build_title) + '</p>' : "") +
+                '<h3>' + escapeHtml(c.character) + '</h3>' +
+                (c.build_title ? '<p class="build-subtitle">' + escapeHtml(c.build_title) + '</p>' : "") +
                 '<div class="uid-detail-hero-grade" style="--grade-color:' + gradeColor + '">' +
-                    escHtml(c.grade || "?") +
-                    ' <small>' + escHtml(c.grade_description || "") + '</small>' +
+                    escapeHtml(c.grade || "?") +
+                    ' <small>' + escapeHtml(c.grade_description || "") + '</small>' +
                 '</div>' +
             '</div>' +
 
@@ -513,7 +541,7 @@
                 ? '<div style="margin-bottom:12px;">' +
                     sectionTitle(UI_ICONS.layers, "Build Summary") +
                     '<p style="color:var(--text-dim);font-size:12.5px;line-height:1.6;">' +
-                        escHtml(c.build_description) + '</p>' +
+                        escapeHtml(c.build_description) + '</p>' +
                   '</div>'
                 : "") +
 
@@ -527,18 +555,22 @@
             benchHtml +
 
             // Recommendations
-            recsHtml;
+            recsHtml +
+
+            // Download image button
+            '<div style="margin-top:14px;text-align:center;">' +
+                '<button type="button" class="btn btn-ghost uid-dl-btn" style="font-size:12px;padding:9px 16px;">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+                    ' Download Image' +
+                '</button>' +
+            '</div>';
     }
 
     // ==========================================================
     // HELPERS
     // ==========================================================
 
-    function tierCls(tier) {
-        return tier ? "tier-" + tier.toLowerCase().replace(/\s+/g, "-") : "";
-    }
 
-    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; }
 
     function fmtStat(key, val) {
         if (val === "—" || val == null) return "—";
@@ -550,11 +582,6 @@
         return num.toFixed(1);
     }
 
-    function escHtml(str) {
-        var d = document.createElement("div");
-        d.textContent = String(str);
-        return d.innerHTML;
-    }
 
     // ==========================================================
     // INIT

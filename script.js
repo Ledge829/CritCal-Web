@@ -81,6 +81,43 @@ if (statusDot && typeof API_BASE !== "undefined") {
         });
 }
 
+// ---------- Shared helpers (used by analyze.js, characters.js, uid-search.js) ----------
+
+/**
+ * Escapes a string for safe insertion into HTML body text.
+ * Uses DOM parsing (not regex) so it's correct for any text content.
+ */
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = String(str);
+    return div.innerHTML;
+}
+
+/**
+ * Capitalizes the first character of a string, lowercasing the rest.
+ */
+function capitalize(str) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Maps grade letters (S/A/B/C/D) to their hex embed colors.
+ * Used by the analyze and UID-search result renderers.
+ */
+const GRADE_COLORS = {
+    S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B",
+};
+
+/**
+ * Converts a weapon/artifact tier string to a CSS class name,
+ * e.g. "Type Mismatch" -> "tier-type-mismatch", "BiS" -> "tier-bis".
+ */
+function tierClass(tier) {
+    if (!tier) return "";
+    return "tier-" + tier.toLowerCase().replace(/\s+/g, "-");
+}
+
 // (No cursor-tracked hover effects here on purpose -- a mousemove
 // listener firing on every pixel of pointer movement is exactly the
 // kind of "unnecessary JS" the calmer, performance-first design is

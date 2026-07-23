@@ -94,12 +94,6 @@ function renderSkeletons(count) {
     `).join("");
 }
 
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
 
-function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = String(str);
-    return div.innerHTML;
-}
+
+

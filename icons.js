@@ -6,13 +6,13 @@ here are available globally without any bundler/import step.
 */
 
 const ELEMENT_COLORS = {
-    pyro: "#FF6B4A",
-    hydro: "#4EA7FF",
-    anemo: "#6FE0C0",
-    electro: "#C79BFF",
-    dendro: "#A8D24A",
-    cryo: "#9BE3FF",
-    geo: "#FFD86B",
+    pyro: "#E0785C",
+    hydro: "#5B9BD6",
+    anemo: "#6BC7AE",
+    electro: "#B18FE0",
+    dendro: "#97BE58",
+    cryo: "#83C6DE",
+    geo: "#D6B96C",
 };
 
 const ELEMENT_ICONS = {

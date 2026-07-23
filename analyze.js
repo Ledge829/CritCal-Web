@@ -1,4 +1,5 @@
-// API_BASE from script.js, icon/color helpers from icons.js, portraitInnerHtml from portraits.js.
+// API_BASE, escapeHtml, capitalize, GRADE_COLORS, tierClass from script.js;
+// icon/color helpers from icons.js; portraitInnerHtml from portraits.js.
 
 const form = document.getElementById("analyze-form");
 const submitButton = document.getElementById("submit-button");
@@ -10,6 +11,8 @@ const previewAvatar = document.getElementById("preview-avatar");
 const previewText = document.getElementById("preview-text");
 
 let allCharacters = [];
+let _lastResult = null;
+let _lastCharInfo = null;
 
 // ---------- Autocomplete + character preview data ----------
 fetch(`${API_BASE}/characters`)
@@ -47,10 +50,6 @@ function updateCharacterPreview() {
 }
 
 characterInput.addEventListener("input", updateCharacterPreview);
-
-function capitalize(str) {
-    return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
-}
 
 // ---------- Pre-fill from ?character=Name (used by the browse page) ----------
 const params = new URLSearchParams(window.location.search);
@@ -102,6 +101,10 @@ form.addEventListener("submit", async (event) => {
             renderError(data.error);
         } else {
             renderResult(data);
+            // Store character info for the download button.
+            const typed = (body.character || "").trim().toLowerCase();
+            _lastCharInfo = typed && allCharacters.find((c) => c.name.toLowerCase() === typed) || null;
+            _lastResult = data;
         }
     } catch (err) {
         renderError(
@@ -150,15 +153,6 @@ function renderError(message) {
         </div>
     `;
 }
-
-function tierClass(tier) {
-    if (!tier) return "";
-    return "tier-" + tier.toLowerCase().replace(/\s+/g, "-");
-}
-
-const GRADE_COLORS = {
-    S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B",
-};
 
 function renderResult(data) {
     const gradeColor = data.embed_color || GRADE_COLORS[data.grade] || "#5B9BD6";
@@ -243,12 +237,43 @@ function renderResult(data) {
             ${benchmarkSection}
             ${recommendationsSection}
 
+            <div class="result-section" style="text-align:center;">
+                <button type="button" class="btn btn-ghost" id="download-card-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Image
+                </button>
+            </div>
+
         </div>
     `;
+
+    // Wire up the download button
+    setTimeout(wireDownload, 0);
 }
 
-function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = String(str);
-    return div.innerHTML;
+function wireDownload() {
+    const btn = document.getElementById("download-card-btn");
+    if (!btn) return;
+    btn.addEventListener("click", async function () {
+        if (!_lastResult) return;
+        btn.disabled = true;
+        btn.textContent = "Generating...";
+        try {
+            const blob = await window.generateRatingCard(_lastResult, _lastCharInfo || {});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = (_lastResult.character || "build") + "-rating.png";
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Card generation failed:", err);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Image`;
+        }
+    });
 }
+
+
