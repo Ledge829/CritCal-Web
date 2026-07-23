@@ -1,57 +1,63 @@
 /*
-Canvas-based rating card generator for CritCal.
+Canvas-based build card — banner/widget style inspired by akasha.cv.
 
-Draws a PNG build card (like akasha.cv) from a rate_build API response.
-No external dependencies -- uses the built-in Canvas API.
+Produces a wide, compact PNG card (720 x 360 at 1x, drawn at 2x for retina)
+that fits comfortably in social feeds, Discord embeds, or as a share image.
 
-Card layout (540 x 760 at 1x, drawn at 2x for retina):
-  - Element-colored top accent bar
-  - Character portrait (circle) + name + build title
-  - Grade circle + overall score
-  - Crit value + ratio
-  - Stats row (HP / ATK / DEF / EM / ER)
-  - Equipment rows (weapon + artifact set) with tier badges
-  - CritCal footer watermark
+Layout (L = left column ~180px, R = right column ~516px):
+  ┌─────────────────────────────────────────────────────────────┐
+  │ ██ element-colored top bar                                  │
+  │                                                              │
+  │  ┌────────┐  Character Name      ┌───┐  Score  Crit Value  │
+  │  │Portrait│  ★★★★★  Element      │ S │  92.6   352         │
+  │  │  72px  │  Build Title         └───┘                     │
+  │  │ circle │  HP 32k  ATK 1.2k                              │
+  │  │ on bg  │  DEF 720  EM   40  ER 181%                    │
+  │  └────────┘                                                │
+  │              Staff of Homa R1                   [BiS]      │
+  │              4pc Crimson Witch of Flames        [BiS]      │
+  │                                                              │
+  │              CritCal · trycritcal.vercel.app                │
+  │ ██ grade-colored bottom bar                                 │
+  └─────────────────────────────────────────────────────────────┘
 
-Use:
-    const blob = await generateRatingCard(resultData, charInfo);
-    // blob is a PNG ready for <a download> or navigator.share()
+Usage:
+    const blob = await window.generateRatingCard(resultData, charInfo);
+    // PNG blob ready for <a download> or navigator.share()
 */
 
 (function () {
     "use strict";
 
-    // Card dimensions at 1x. Canvas renders at 2x for retina.
-    var W = 540;
-    var H = 760;
+    // Banner dimensions (2:1 ratio)
+    var W = 720;
+    var H = 388;
     var SCALE = 2;
 
-    // Pixel positions -- all in 1x coordinates (canvas is scaled 2x).
-    // These are calculated to give consistent spacing across sections.
-    var L = 32;  // left margin (also right)
-    var R = W - L;
+    // Layout constants (1x coords)
+    var PAD = 20;          // outer padding
+    var LEFT_W = 140;      // left column width (portrait area)
+    var LEFT_CX = PAD + Math.round(LEFT_W / 2);  // portrait center X
+    var RIGHT_X = PAD + LEFT_W + 16;             // right column start X
+    var RIGHT_W = W - RIGHT_X - PAD;             // right column width
 
-    // Element color palette (same as the design system -- CSS / icons.js)
-    var ELEMENT_ACCENTS = {
-        pyro:   "#E0785C",
-        hydro:  "#5B9BD6",
-        anemo:  "#6BC7AE",
-        electro:"#B18FE0",
-        dendro: "#97BE58",
-        cryo:   "#83C6DE",
-        geo:    "#D6B96C",
+    // Element accent palette (matches design system)
+    var ELEMENT = {
+        pyro:   { hex: "#E0785C", glow: "rgba(224,120,92,0.20)" },
+        hydro:  { hex: "#5B9BD6", glow: "rgba(91,155,214,0.20)" },
+        anemo:  { hex: "#6BC7AE", glow: "rgba(107,199,174,0.20)" },
+        electro:{ hex: "#B18FE0", glow: "rgba(177,143,224,0.20)" },
+        dendro: { hex: "#97BE58", glow: "rgba(151,190,88,0.20)"  },
+        cryo:   { hex: "#83C6DE", glow: "rgba(131,198,222,0.20)" },
+        geo:    { hex: "#D6B96C", glow: "rgba(214,185,108,0.20)" },
     };
 
-    var TEXT_DIM = "#98A2B3";
-    var TEXT_FAINT = "#666F7F";
-
-    // Grade colors mirror GRADE_COLORS from script.js
-    var GRADE_HEX = {
-        S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B",
-    };
+    function el(key) {
+        return ELEMENT[key] || ELEMENT.hydro;
+    }
 
     // ==========================================================
-    // HELPERS
+    // CANVAS UTILITIES
     // ==========================================================
 
     function roundRect(ctx, x, y, w, h, r) {
@@ -77,26 +83,34 @@ Use:
         if (val == null) return "—";
         var num = Number(val);
         if (key === "er") return num.toFixed(0) + "%";
+        if (num >= 10000) return Math.round(num / 1000) + "k";
         if (num >= 1000) return Math.round(num).toLocaleString();
-        return Math.round(num).toFixed(0);
+        if (key === "em") return num.toFixed(0);
+        return num.toFixed(0);
     }
 
     // ==========================================================
-    // PORTRAIT / INITIAL FALLBACK
+    // PORTRAIT
     // ==========================================================
 
-    /**
-     * Draws the character portrait clipped to a circle, falling back
-     * to an initial-letter avatar if the image can't load (CORS, etc.).
-     * Returns a Promise that resolves when drawing is done.
-     */
     function drawPortrait(ctx, cx, cy, radius, charInfo) {
         return new Promise(function (resolve) {
-            var initial = (charInfo.name || "?").charAt(0).toUpperCase();
-            var url = charInfo.portrait;
+            var info = charInfo || {};
+            var initial = (info.name || "?").charAt(0).toUpperCase();
+            var url = info.portrait;
+            var e = el(info.element);
+
+            // Glow ring behind portrait
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius + 6, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fillStyle = e.glow;
+            ctx.fill();
+            ctx.restore();
 
             if (!url) {
-                drawInitial(ctx, cx, cy, radius, initial, charInfo.element);
+                drawInitial(ctx, cx, cy, radius, initial, e.hex);
                 resolve();
                 return;
             }
@@ -105,19 +119,26 @@ Use:
             img.crossOrigin = "anonymous";
 
             img.onload = function () {
-                // Clip to circle and draw
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(cx, cy, radius, 0, Math.PI * 2);
                 ctx.closePath();
                 ctx.clip();
                 ctx.drawImage(img, cx - radius, cy - radius, radius * 2, radius * 2);
+
+                // Thin border over the image
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.strokeStyle = e.hex + "55";
+                ctx.lineWidth = 2;
+                ctx.stroke();
                 ctx.restore();
                 resolve();
             };
 
             img.onerror = function () {
-                drawInitial(ctx, cx, cy, radius, initial, charInfo.element);
+                drawInitial(ctx, cx, cy, radius, initial, e.hex);
                 resolve();
             };
 
@@ -125,8 +146,7 @@ Use:
         });
     }
 
-    function drawInitial(ctx, cx, cy, radius, letter, element) {
-        var color = ELEMENT_ACCENTS[element] || "#5B9BD6";
+    function drawInitial(ctx, cx, cy, radius, letter, color) {
         ctx.save();
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -137,7 +157,7 @@ Use:
         ctx.lineWidth = 2;
         ctx.stroke();
         ctx.fillStyle = color;
-        ctx.font = "bold 32px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "600 30px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(letter, cx, cy + 1);
@@ -145,18 +165,46 @@ Use:
     }
 
     // ==========================================================
+    // TIER BADGE
+    // ==========================================================
+
+    var TIER_META = {
+        "bis":             { bg: "rgba(214,185,108,0.20)", fg: "#D6B96C" },
+        "secondary":       { bg: "rgba(91,155,214,0.20)",  fg: "#5B9BD6" },
+        "f2p":             { bg: "rgba(107,199,174,0.20)", fg: "#6BC7AE" },
+        "niche":           { bg: "rgba(177,143,224,0.20)", fg: "#B18FE0" },
+        "unlisted":        { bg: "rgba(152,162,179,0.20)", fg: "#98A2B3" },
+        "unrecognized":    { bg: "rgba(224,137,155,0.20)", fg: "#E0899B" },
+        "type mismatch":   { bg: "rgba(224,137,155,0.20)", fg: "#E0899B" },
+        "hybrid":          { bg: "rgba(152,162,179,0.20)", fg: "#98A2B3" },
+        "fragmented":      { bg: "rgba(224,137,155,0.20)", fg: "#E0899B" },
+    };
+
+    function drawTierBadge(ctx, label, x, y) {
+        var key = (label || "").toLowerCase();
+        var meta = TIER_META[key] || TIER_META.unlisted;
+        var bw = 48, bh = 18;
+        roundRect(ctx, x, y, bw, bh, 9);
+        ctx.fillStyle = meta.bg;
+        ctx.fill();
+        ctx.fillStyle = meta.fg;
+        ctx.font = "700 8px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(label, x + bw / 2, y + bh / 2 + 1);
+        ctx.textBaseline = "top";
+    }
+
+    // ==========================================================
     // MAIN RENDERER
     // ==========================================================
 
     /**
-     * Generates a PNG rating card.
-     *
-     * @param {Object} result - The full rate_build API response.
-     * @param {Object} charInfo - Character metadata with:
-     *   { element, portrait, name, key } — the shape from /characters API.
-     * @returns {Promise<Blob>} A PNG Blob.
+     * Generates a PNG build card in banner/widget style.
+     * @param {Object} result - Full rate_build API response.
+     * @param {Object} charInfo - { element, portrait, name, key, rarity }.
+     * @returns {Promise<Blob>}
      */
-    // eslint-disable-next-line no-unused-vars
     window.generateRatingCard = async function (result, charInfo) {
         var canvas = document.createElement("canvas");
         canvas.width = W * SCALE;
@@ -165,57 +213,91 @@ Use:
         ctx.scale(SCALE, SCALE);
         ctx.textBaseline = "top";
 
-        var elColor = ELEMENT_ACCENTS[charInfo && charInfo.element] || "#5B9BD6";
-        var gradeColor = result.embed_color || GRADE_HEX[result.grade] || "#5B9BD6";
+        var info = charInfo || {};
+        var e = el(info.element);
+        var gradeColor = result.embed_color;
+        if (!gradeColor) {
+            var g = (result.grade || "")[0];
+            gradeColor = { S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B" }[g] || "#5B9BD6";
+        }
+
+        var name = result.character || "Unknown";
+        var buildTitle = result.build_title || "";
+        var grade = result.grade || "?";
+        var score = result.overall_score != null ? result.overall_score : "--";
+        var cv = result.crit_value != null ? result.crit_value : "--";
+        var cr = result.crit_rate != null ? result.crit_rate : "--";
+        var cd = result.crit_dmg != null ? result.crit_dmg : "--";
 
         // ---- BACKGROUND ----
         ctx.fillStyle = "#0A0D13";
         ctx.fillRect(0, 0, W, H);
 
-        // Card surface (slightly lighter than bg)
-        roundRect(ctx, 8, 8, W - 16, H - 16, 16);
+        // Subtle element gradient on the left column
+        var grad = ctx.createRadialGradient(LEFT_CX, 70, 10, LEFT_CX, 100, 180);
+        grad.addColorStop(0, e.hex + "20");
+        grad.addColorStop(1, "rgba(10,13,19,0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, LEFT_W + PAD + 20, H);
+
+        // Card surface (slightly lighter panel)
+        roundRect(ctx, 8, 8, W - 16, H - 16, 14);
         ctx.fillStyle = "#10141C";
         ctx.fill();
 
-        // Top accent bar (element-colored)
-        roundRect(ctx, 8, 8, W - 16, 6, 3);
-        ctx.fillStyle = elColor;
+        // ---- TOP ACCENT BAR (element-colored) ----
+        roundRect(ctx, 8, 8, W - 16, 5, 2.5);
+        ctx.fillStyle = e.hex;
         ctx.fill();
 
-        // ---- PORTRAIT ----
-        var portraitCY = 72;
-        await drawPortrait(ctx, W / 2, portraitCY, 38, charInfo);
+        // ---- PORTRAIT (left column) ----
+        var portY = 48;
+        await drawPortrait(ctx, LEFT_CX, portY + 36, 36, info);
 
-        // ---- NAME + TITLE ----
-        ctx.fillStyle = "#EEF1F5";
-        ctx.font = "600 22px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(result.character || "Unknown", W / 2, 125);
-
-        if (result.build_title) {
-            ctx.fillStyle = TEXT_DIM;
-            ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(result.build_title, W / 2, 153);
+        // Element label below portrait
+        if (info.element) {
+            ctx.fillStyle = e.hex;
+            ctx.font = "500 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(capitalize(info.element), LEFT_CX, portY + 82);
         }
 
-        // ---- DIVIDER 1 ----
-        var y = 180;
-        ctx.strokeStyle = "rgba(255,255,255,0.06)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(L, y);
-        ctx.lineTo(R, y);
-        ctx.stroke();
+        // ---- NAME + STARS (top of right column) ----
+        var x = RIGHT_X;
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#EEF1F5";
+        ctx.font = "600 20px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(name, x, 40);
 
-        // ---- GRADE + SCORE ----
-        y = 208;
-        var gcR = 34;
-        // Grade circle
+        // Rarity stars next to/subtitle
+        var rarity = info.rarity || 5;
+        var starStr = "";
+        for (var si = 0; si < rarity; si++) starStr += "★";
+        ctx.fillStyle = rarity >= 5 ? "#D6B96C" : "#B79EDB";
+        ctx.font = "12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(starStr, x + ctx.measureText(name).width + 10, 44);
+        // Also show weapon type
+        ctx.fillStyle = "#666F7F";
+        ctx.font = "400 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        var wepTypeX = x + ctx.measureText(name).width + 10 + ctx.measureText(starStr).width + 12;
+        // Only if we have a weapon type from somewhere... skip if not available
+
+        // Build title
+        if (buildTitle) {
+            ctx.fillStyle = "#98A2B3";
+            ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillText(buildTitle, x, 66);
+        }
+
+        // ---- GRADE CIRCLE (right side) ----
+        var gX = W - PAD - 34;
+        var gY = 38;
+
         ctx.save();
         ctx.beginPath();
-        ctx.arc(L + gcR, y + gcR, gcR, 0, Math.PI * 2);
+        ctx.arc(gX, gY + 34, 34, 0, Math.PI * 2);
         ctx.closePath();
-        ctx.fillStyle = gradeColor + "18";  // ~10% opacity
+        ctx.fillStyle = gradeColor + "18";
         ctx.fill();
         ctx.strokeStyle = gradeColor;
         ctx.lineWidth = 2.5;
@@ -224,139 +306,145 @@ Use:
         ctx.font = "700 28px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(result.grade || "?", L + gcR, y + gcR + 1);
+        ctx.fillText(grade, gX, gY + 34 + 1);
         ctx.textBaseline = "top";
         ctx.restore();
 
-        // Score number
-        ctx.fillStyle = "#EEF1F5";
-        ctx.font = "600 32px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "left";
-        ctx.fillText((result.overall_score != null ? result.overall_score : "--"), L + gcR * 2 + 20, y + 4);
-
-        ctx.fillStyle = TEXT_DIM;
-        ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("Overall Score", L + gcR * 2 + 20, y + 42);
-
-        // Crit value label at right
-        ctx.fillStyle = TEXT_FAINT;
-        ctx.font = "400 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "right";
-        ctx.fillText("CRIT VALUE", R, y + 4);
-
-        ctx.fillStyle = "#EEF1F5";
-        ctx.font = "600 24px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(String(result.crit_value != null ? result.crit_value : "--"), R, y + 20);
-
-        // ---- CRIT RATIO ----
-        y = 290;
-        ctx.fillStyle = TEXT_DIM;
-        ctx.font = "400 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        // Score label above grade circle
+        ctx.fillStyle = "#666F7F";
+        ctx.font = "500 8px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
-        var cr = result.crit_rate != null ? result.crit_rate : "--";
-        var cd = result.crit_dmg != null ? result.crit_dmg : "--";
-        ctx.fillText("Crit Rate " + cr + "%  /  Crit DMG " + cd + "%", W / 2, y);
+        ctx.fillText("SCORE", gX, gY - 10);
 
-        // Grade description (short, centered)
+        // Score value to the right of grade, or... actually let me put score and CV in a column right of the grade circle
+        var infoX = gX + 44;
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#EEF1F5";
+        ctx.font = "600 18px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(String(score), infoX, gY + 6);
+
+        ctx.fillStyle = "#666F7F";
+        ctx.font = "400 8px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("OVERALL SCORE", infoX, gY + 30);
+
+        ctx.fillStyle = "#EEF1F5";
+        ctx.font = "600 14px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("CV " + cv, infoX, gY + 48);
+
+        // ---- CRIT RATIO ROW ----
+        var rowY = 100;
+        ctx.fillStyle = "#98A2B3";
+        ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText("Crit Rate " + cr + "%  /  Crit DMG " + cd + "%", x, rowY);
+
+        // Grade description
         if (result.grade_description) {
-            ctx.fillStyle = TEXT_FAINT;
-            ctx.font = "400 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(result.grade_description, W / 2, y + 20);
+            ctx.fillStyle = "#666F7F";
+            ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillText(result.grade_description, x, rowY + 16);
         }
 
-        // ---- DIVIDER 2 ----
-        y = 328;
-        ctx.strokeStyle = "rgba(255,255,255,0.06)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(L, y);
-        ctx.lineTo(R, y);
-        ctx.stroke();
-
-        // ---- STATS ----
-        y = 345;
-        ctx.fillStyle = TEXT_FAINT;
-        ctx.font = "600 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("STATS", W / 2, y);
-
-        y += 22;
-        var stats = (result.stats_used) || {};
-        var statKeys = ["hp", "atk", "def", "elemental_mastery", "energy_recharge"];
-        var statLabels = ["HP", "ATK", "DEF", "EM", "ER"];
-        var statDisplayKeys = ["hp", "atk", "def", "em", "er"];
-
-        // Check if any stat has a non-zero value
-        var hasStats = statKeys.some(function (k) { return stats[k] != null && stats[k] > 0; });
+        // ---- STATS ROW ----
+        var statsY = 142;
+        var stats = result.stats_used || {};
+        var statDefs = [
+            { key: "hp",  label: "HP",  ikey: "hp" },
+            { key: "atk", label: "ATK", ikey: "atk" },
+            { key: "def", label: "DEF", ikey: "def" },
+            { key: "elemental_mastery", label: "EM",  ikey: "em" },
+            { key: "energy_recharge",   label: "ER",  ikey: "er" },
+        ];
+        var hasStats = statDefs.some(function (s) { return stats[s.key] != null && stats[s.key] > 0; });
 
         if (hasStats) {
-            var cellW = (R - L) / statKeys.length;
-            for (var si = 0; si < statKeys.length; si++) {
-                var sx = L + cellW * si + cellW / 2;
-                var rawVal = stats[statKeys[si]];
+            // Background panel for stats
+            var statPanelX = x;
+            var statPanelY = statsY;
+            var statPanelW = RIGHT_W;
+            var statPanelH = 42;
+            roundRect(ctx, statPanelX, statPanelY, statPanelW, statPanelH, 8);
+            ctx.fillStyle = "rgba(255,255,255,0.03)";
+            ctx.fill();
 
-                ctx.fillStyle = "#EEF1F5";
-                ctx.font = "600 16px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                ctx.fillText(fmtStat(statDisplayKeys[si], rawVal), sx, y);
+            var statCount = statDefs.length;
+            var cellW = Math.floor(statPanelW / statCount);
+            for (var i = 0; i < statCount; i++) {
+                var sd = statDefs[i];
+                var sx = statPanelX + cellW * i + Math.floor(cellW / 2);
 
-                ctx.fillStyle = TEXT_FAINT;
-                ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                ctx.fillText(statLabels[si], sx, y + 22);
+                if (stats[sd.key] != null && stats[sd.key] > 0) {
+                    ctx.fillStyle = "#EEF1F5";
+                    ctx.font = "600 16px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText(fmtStat(sd.ikey, stats[sd.key]), sx, statPanelY + 7);
+
+                    ctx.fillStyle = "#666F7F";
+                    ctx.font = "500 8px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                    ctx.fillText(sd.label, sx, statPanelY + 30);
+                }
             }
-            y += 50;
         }
 
-        // ---- DIVIDER 3 ----
-        y += 2;
-        ctx.strokeStyle = "rgba(255,255,255,0.06)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(L, y);
-        ctx.lineTo(R, y);
-        ctx.stroke();
-
         // ---- EQUIPMENT ----
-        y += 18;
-        var hasEq = result.weapon_name || result.primary_artifact_set_name;
+        var eqY = hasStats ? statsY + statPanelH + 14 : statsY + 10;
 
-        if (hasEq) {
-            ctx.fillStyle = TEXT_FAINT;
-            ctx.font = "600 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("EQUIPMENT", W / 2, y);
+        var hasWeapon = result.weapon_name;
+        var hasArtifact = result.primary_artifact_set_name;
 
-            y += 22;
+        if (hasWeapon || hasArtifact) {
+            // Background panel
+            var eqPanelX = x;
+            var eqPanelH = (hasWeapon && hasArtifact ? 58 : 34);
+            roundRect(ctx, eqPanelX, eqY, RIGHT_W, eqPanelH, 8);
+            ctx.fillStyle = "rgba(255,255,255,0.03)";
+            ctx.fill();
 
-            // Weapon row
-            if (result.weapon_name) {
+            var eqInnerY = eqY + 8;
+
+            if (hasWeapon) {
                 var wepRefine = result.weapon_refinement ? " R" + result.weapon_refinement : "";
-                drawEqRow(ctx, L, y, R, result.weapon_name + wepRefine, "Weapon", result.weapon_tier);
-                y += 36;
+                ctx.textAlign = "left";
+                ctx.fillStyle = "#EEF1F5";
+                ctx.font = "600 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.fillText(result.weapon_name + wepRefine, eqPanelX + 10, eqInnerY);
+
+                ctx.fillStyle = "#666F7F";
+                ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.fillText("Weapon", eqPanelX + 10, eqInnerY + 18);
+
+                if (result.weapon_tier) {
+                    drawTierBadge(ctx, result.weapon_tier, eqPanelX + RIGHT_W - 62, eqInnerY);
+                }
+
+                eqInnerY += 28;
             }
 
-            // Artifact set row
-            if (result.primary_artifact_set_name) {
+            if (hasArtifact) {
+                ctx.textAlign = "left";
+                ctx.fillStyle = "#EEF1F5";
+                ctx.font = "600 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
                 var setCount = result.primary_artifact_set_count ? result.primary_artifact_set_count + "pc" : "";
-                var setLabel = "Artifacts" + (setCount ? " · " + setCount : "");
-                drawEqRow(ctx, L, y, R, result.primary_artifact_set_name, setLabel, result.artifact_tier);
-                y += 36;
+                ctx.fillText(result.primary_artifact_set_name + (setCount ? "  (" + setCount + ")" : ""), eqPanelX + 10, eqInnerY);
+
+                ctx.fillStyle = "#666F7F";
+                ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.fillText("Artifact Set", eqPanelX + 10, eqInnerY + 18);
+
+                if (result.artifact_tier) {
+                    drawTierBadge(ctx, result.artifact_tier, eqPanelX + RIGHT_W - 62, eqInnerY);
+                }
             }
-        } else {
-            ctx.fillStyle = TEXT_FAINT;
-            ctx.font = "400 11px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("No equipment data provided", W / 2, y + 4);
-            y += 30;
         }
 
         // ---- FOOTER ----
-        ctx.fillStyle = TEXT_FAINT;
-        ctx.font = "400 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "#444C5A";
+        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("CritCal · critcal.vercel.app", W / 2, H - 32);
+        ctx.fillText("CritCal  ·  trycritcal.vercel.app", W / 2, H - 24);
 
-        // Grade-color stripe at bottom
-        roundRect(ctx, 8, H - 10, W - 16, 4, 2);
+        // ---- BOTTOM ACCENT BAR (grade-colored) ----
+        roundRect(ctx, 8, H - 11, W - 16, 5, 2.5);
         ctx.fillStyle = gradeColor;
         ctx.fill();
 
@@ -367,74 +455,5 @@ Use:
             }, "image/png");
         });
     };
-
-    // ==========================================================
-    // EQUIPMENT ROW HELPER
-    // ==========================================================
-
-    var TIER_CLASSES = {
-        bis: "gold",
-        secondary: "primary",
-        f2p: "green",
-        niche: "purple",
-        unlisted: "neutral",
-        unrecognized: "red",
-        "type mismatch": "red",
-        hybrid: "neutral",
-        fragmented: "red",
-    };
-
-    var TIER_BG = {
-        gold:   "rgba(214,185,108,0.18)",
-        primary:"rgba(91,155,214,0.18)",
-        green:  "rgba(107,199,174,0.18)",
-        purple: "rgba(177,143,224,0.18)",
-        neutral:"rgba(152,162,179,0.18)",
-        red:    "rgba(224,137,155,0.18)",
-    };
-
-    var TIER_FG = {
-        gold:   "#D6B96C",
-        primary:"#5B9BD6",
-        green:  "#6BC7AE",
-        purple: "#B18FE0",
-        neutral:"#98A2B3",
-        red:    "#E0899B",
-    };
-
-    function drawEqRow(ctx, x, y, right, name, label, tier) {
-        // Item name
-        ctx.fillStyle = "#EEF1F5";
-        ctx.font = "600 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "left";
-        ctx.fillText(name, x, y);
-
-        // Label below
-        ctx.fillStyle = TEXT_FAINT;
-        ctx.font = "400 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(label, x, y + 18);
-
-        // Tier badge (if present)
-        if (tier) {
-            var tierLower = tier.toLowerCase();
-            var badgeGroup = TIER_CLASSES[tierLower] || "neutral";
-            var badgeW = 52;
-            var badgeH = 20;
-            var badgeX = right - badgeW;
-
-            ctx.save();
-            roundRect(ctx, badgeX, y + 2, badgeW, badgeH, 10);
-            ctx.fillStyle = TIER_BG[badgeGroup] || TIER_BG.neutral;
-            ctx.fill();
-
-            ctx.fillStyle = TIER_FG[badgeGroup] || TIER_FG.neutral;
-            ctx.font = "700 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(tier, badgeX + badgeW / 2, y + 2 + badgeH / 2 + 1);
-            ctx.textBaseline = "top";
-            ctx.restore();
-        }
-    }
 
 })();
