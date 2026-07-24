@@ -230,40 +230,41 @@
         ctx.textBaseline = "top";
 
         // ==========================================================
-        // 1. BACKGROUND
+        // 1. BACKGROUND — cinematic spotlight behind all content.
+        // No dark overlays — everything is a soft coloured glow so
+        // text, stats, and artwork stay 100% opaque and sharp.
         // ==========================================================
 
         ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // Primary bloom — radiates from the art area across both halves
-        var bloomCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.3;
+        // Element bloom — large soft glow radiating from the join
+        // between the info panel and splash art, using the character's
+        // own element colour. No dark/gray overlay on top.
+        var bloomCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.25;
         var bloomCY = H * 0.4;
         var bloom = ctx.createRadialGradient(bloomCX, bloomCY, 10, bloomCX, bloomCY, H * 1.0);
-        bloom.addColorStop(0, eHex + "40");
-        bloom.addColorStop(0.3, eHex + "20");
-        bloom.addColorStop(0.55, eDark + "AA");
+        bloom.addColorStop(0, eHex + "50");    // bright centre, element-coloured
+        bloom.addColorStop(0.35, eHex + "25"); // soft mid
+        bloom.addColorStop(0.65, eHex + "0A"); // faint edge
         bloom.addColorStop(1, "#080A0E");
         ctx.fillStyle = bloom;
         ctx.fillRect(0, 0, W, H);
 
-        // Centre atmosphere — subtle glow so the middle never feels dead
-        var centreGlow = ctx.createRadialGradient(SPLASH_LEFT * 0.55, H * 0.5, 10, SPLASH_LEFT * 0.55, H * 0.5, H * 0.65);
-        centreGlow.addColorStop(0, eHex + "08");
-        centreGlow.addColorStop(0.5, eHex + "04");
-        centreGlow.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = centreGlow;
+        // Spotlight — a second, tighter glow centred on the left panel
+        // so the build info area gets its own warm lighting separate
+        // from the splash art bloom. Pure coloured light, no tint.
+        var spotCX = SPLASH_LEFT * 0.45;
+        var spotCY = H * 0.45;
+        var spot = ctx.createRadialGradient(spotCX, spotCY, 10, spotCX, spotCY, H * 0.55);
+        spot.addColorStop(0, eHex + "20");
+        spot.addColorStop(0.5, eHex + "08");
+        spot.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = spot;
         ctx.fillRect(0, 0, SPLASH_LEFT, H);
 
         // Element-themed environmental particles in the centre zone
         e.glow(ctx, SPLASH_LEFT * 0.5, H * 0.45, SPLASH_LEFT * 0.65, H * 0.55);
-
-        // Left vignette for text readability
-        var leftShade = ctx.createLinearGradient(0, 0, SPLASH_LEFT * 0.45, 0);
-        leftShade.addColorStop(0, "rgba(8,10,14,0.65)");
-        leftShade.addColorStop(1, "rgba(8,10,14,0)");
-        ctx.fillStyle = leftShade;
-        ctx.fillRect(0, 0, Math.round(SPLASH_LEFT * 0.45), H);
 
         // ==========================================================
         // 2. SPLASH ART — per-character framing + rim light
