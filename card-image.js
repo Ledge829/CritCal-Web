@@ -351,35 +351,39 @@
         var statRows = Math.ceil(entries.length / 2);
         var eqTop = statTop + statRows * 22 + 14;
 
-        ctx.fillStyle = "rgba(255,255,255,0.45)";
-        ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("EQUIPMENT", PAD_LEFT, eqTop);
-
-        var eqY = eqTop + 16;
         var hasWeapon = result.weapon_name;
         var hasSet = result.primary_artifact_set_name;
 
-        if (hasWeapon) {
-            var wr = result.weapon_refinement ? "  R" + result.weapon_refinement : "";
-            ctx.fillStyle = "rgba(255,255,255,0.8)";
-            ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(result.weapon_name + wr, PAD_LEFT, eqY);
-            if (result.weapon_tier) {
-                drawTierBadge(ctx, result.weapon_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
-            }
-            eqY += 22;
-        }
+        // ---- 3g. EQUIPMENT (only if data was provided) ----
+        if (hasWeapon || hasSet) {
+            ctx.fillStyle = "rgba(255,255,255,0.45)";
+            ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillText("EQUIPMENT", PAD_LEFT, eqTop);
 
-        if (hasSet) {
-            var setLabel = result.primary_artifact_set_name;
-            if (result.primary_artifact_set_count) {
-                setLabel += "  " + result.primary_artifact_set_count + "pc";
+            var eqY = eqTop + 16;
+
+            if (hasWeapon) {
+                var wr = result.weapon_refinement ? "  R" + result.weapon_refinement : "";
+                ctx.fillStyle = "rgba(255,255,255,0.8)";
+                ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.fillText(result.weapon_name + wr, PAD_LEFT, eqY);
+                if (result.weapon_tier) {
+                    drawTierBadge(ctx, result.weapon_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
+                }
+                eqY += 22;
             }
-            ctx.fillStyle = "rgba(255,255,255,0.8)";
-            ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(setLabel, PAD_LEFT, eqY);
-            if (result.artifact_tier) {
-                drawTierBadge(ctx, result.artifact_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
+
+            if (hasSet) {
+                var setLabel = result.primary_artifact_set_name;
+                if (result.primary_artifact_set_count) {
+                    setLabel += "  " + result.primary_artifact_set_count + "pc";
+                }
+                ctx.fillStyle = "rgba(255,255,255,0.8)";
+                ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.fillText(setLabel, PAD_LEFT, eqY);
+                if (result.artifact_tier) {
+                    drawTierBadge(ctx, result.artifact_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
+                }
             }
         }
 
