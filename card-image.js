@@ -1,13 +1,12 @@
 /*
- * Build rating card for CritCal — premium promotional art direction.
+ * Build rating card for CritCal — production-ready.
  *
- * The character splash art IS the composition; the UI is layered
- * alongside it, sharing the same element-toned atmosphere. Every
- * element flows together with no hard boundaries.
+ * One unified composition: character splash art flows into the
+ * element atmosphere on the left, with cleanly structured build
+ * data overlaid. Every character gets unique framing from their
+ * splash art's aspect ratio, and text never overflows.
  *
- * Visual hierarchy: Character Name → Overall Score → Crit Stats →
- * Core Stats → Equipment, with element-themed atmosphere filling
- * the space between them.
+ * Visual hierarchy: Name → Score → Crit → Stats → Equipment
  *
  * Canvas: 1000 × 540 (drawn at 2x for retina).
  */
@@ -19,122 +18,115 @@
     var H = 540;
     var SCALE = 2;
 
-    var SPLASH_LEFT = 470;    // art begins blending here
+    var SPLASH_LEFT = 470;
     var PAD = 32;
-    var CONTENT_W = SPLASH_LEFT - PAD * 2;
-    var ATMO_FADE = 280;       // generous blend zone
+    var CONTENT_W = SPLASH_LEFT - PAD * 2;   // ~406px
+    var ATMO_FADE = 280;
 
     // ==========================================================
-    // ELEMENT ATMOSPHERE — each element has a distinct visual mood.
-    // `.hex` accent, `.dark` deep base, `.particles` the tiny
-    // floating elements that fill dead space in the center.
+    // ELEMENT ATMOSPHERE
     // ==========================================================
 
     var EL = {
-        pyro:   { hex: "#E0785C", dark: "#1A0E0A", accent: "#E0785C",
-                  particles: function (ctx, cx, cy, w, h) {
+        pyro:   { hex: "#E0785C", dark: "#1A0E0A",
+                  glow: function (ctx, cx, cy, w, h) {
                       for (var i = 0; i < 18; i++) {
-                          var px = cx + (i * 37 + 11) % w - w/2;
-                          var py = cy + (i * 53 + 7) % h - h/2;
-                          var r = 1 + (i % 3);
-                          ctx.globalAlpha = 0.04 + (i % 4) * 0.01;
+                          var px = cx + (i * 37 + 11) % w - w / 2;
+                          var py = cy + (i * 53 + 7) % h - h / 2;
+                          ctx.globalAlpha = 0.035 + (i % 4) * 0.008;
                           ctx.fillStyle = "#E0785C";
-                          ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI*2); ctx.fill();
+                          ctx.beginPath(); ctx.arc(px, py, 1 + (i % 3), 0, Math.PI * 2); ctx.fill();
                       }
-                      ctx.globalAlpha = 1;
                   } },
-        hydro:  { hex: "#5B9BD6", dark: "#0A141E", accent: "#5B9BD6",
-                  particles: function (ctx, cx, cy, w, h) {
+        hydro:  { hex: "#5B9BD6", dark: "#0A141E",
+                  glow: function (ctx, cx, cy, w, h) {
                       for (var i = 0; i < 12; i++) {
-                          var px = cx + (i * 47 + 13) % w - w/2;
-                          var py = cy + (i * 61 + 5) % h - h/2;
-                          ctx.globalAlpha = 0.03 + (i % 5) * 0.008;
-                          ctx.strokeStyle = "#5B9BD6";
-                          ctx.lineWidth = 0.5;
-                          ctx.beginPath(); ctx.moveTo(px - 8, py); ctx.lineTo(px + 8, py); ctx.stroke();
+                          var px = cx + (i * 47 + 13) % w - w / 2;
+                          var py = cy + (i * 61 + 5) % h - h / 2;
+                          ctx.globalAlpha = 0.03 + (i % 5) * 0.006;
+                          ctx.strokeStyle = "#5B9BD6"; ctx.lineWidth = 0.5;
+                          ctx.beginPath(); ctx.moveTo(px - 7, py); ctx.lineTo(px + 7, py); ctx.stroke();
                       }
-                      ctx.globalAlpha = 1;
                   } },
-        anemo:  { hex: "#6BC7AE", dark: "#0A1814", accent: "#6BC7AE",
-                  particles: function (ctx, cx, cy, w, h) {
+        anemo:  { hex: "#6BC7AE", dark: "#0A1814",
+                  glow: function (ctx, cx, cy, w, h) {
                       for (var i = 0; i < 15; i++) {
-                          var px = cx + (i * 43 + 17) % w - w/2;
-                          var py = cy + (i * 59 + 3) % h - h/2;
-                          var dx = (i % 5 - 2) * 6;
-                          ctx.globalAlpha = 0.03 + (i % 4) * 0.008;
-                          ctx.strokeStyle = "#6BC7AE";
-                          ctx.lineWidth = 0.5;
-                          ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + dx, py - 10); ctx.stroke();
+                          var px = cx + (i * 43 + 17) % w - w / 2;
+                          var py = cy + (i * 59 + 3) % h - h / 2;
+                          ctx.globalAlpha = 0.03 + (i % 4) * 0.006;
+                          ctx.strokeStyle = "#6BC7AE"; ctx.lineWidth = 0.5;
+                          ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + (i % 5 - 2) * 5, py - 9); ctx.stroke();
                       }
-                      ctx.globalAlpha = 1;
                   } },
-        electro:{ hex: "#B18FE0", dark: "#0F0A1A", accent: "#B18FE0",
-                  particles: function (ctx, cx, cy, w, h) {
+        electro:{ hex: "#B18FE0", dark: "#0F0A1A",
+                  glow: function (ctx, cx, cy, w, h) {
                       for (var i = 0; i < 20; i++) {
-                          var px = cx + (i * 31 + 19) % w - w/2;
-                          var py = cy + (i * 47 + 11) % h - h/2;
-                          ctx.globalAlpha = 0.04 + (i % 3) * 0.01;
-                          ctx.strokeStyle = "#B18FE0";
-                          ctx.lineWidth = 0.5;
-                          var a = i * 0.8, r = 3 + (i % 4);
+                          var px = cx + (i * 31 + 19) % w - w / 2;
+                          var py = cy + (i * 47 + 11) % h - h / 2;
+                          ctx.globalAlpha = 0.035 + (i % 3) * 0.008;
+                          ctx.strokeStyle = "#B18FE0"; ctx.lineWidth = 0.5;
+                          var r = 3 + (i % 4);
                           ctx.beginPath(); ctx.moveTo(px - r, py - r); ctx.lineTo(px + r, py + r); ctx.stroke();
                           ctx.beginPath(); ctx.moveTo(px + r, py - r); ctx.lineTo(px - r, py + r); ctx.stroke();
                       }
-                      ctx.globalAlpha = 1;
                   } },
-        dendro: { hex: "#97BE58", dark: "#0F1408", accent: "#97BE58",
-                  particles: function (ctx, cx, cy, w, h) {
+        dendro: { hex: "#97BE58", dark: "#0F1408",
+                  glow: function (ctx, cx, cy, w, h) {
                       for (var i = 0; i < 16; i++) {
-                          var px = cx + (i * 41 + 23) % w - w/2;
-                          var py = cy + (i * 67 + 7) % h - h/2;
-                          ctx.globalAlpha = 0.04 + (i % 4) * 0.008;
+                          var px = cx + (i * 41 + 23) % w - w / 2;
+                          var py = cy + (i * 67 + 7) % h - h / 2;
+                          ctx.globalAlpha = 0.035 + (i % 4) * 0.006;
                           ctx.fillStyle = "#97BE58";
-                          ctx.beginPath(); ctx.arc(px, py, 1.5 + (i % 3), 0, Math.PI*2); ctx.fill();
+                          ctx.beginPath(); ctx.arc(px, py, 1.5 + (i % 3), 0, Math.PI * 2); ctx.fill();
                       }
-                      ctx.globalAlpha = 1;
                   } },
-        cryo:   { hex: "#83C6DE", dark: "#0A1418", accent: "#83C6DE",
-                  particles: function (ctx, cx, cy, w, h) {
+        cryo:   { hex: "#83C6DE", dark: "#0A1418",
+                  glow: function (ctx, cx, cy, w, h) {
                       for (var i = 0; i < 14; i++) {
-                          var px = cx + (i * 53 + 29) % w - w/2;
-                          var py = cy + (i * 71 + 13) % h - h/2;
-                          ctx.globalAlpha = 0.03 + (i % 4) * 0.008;
-                          ctx.strokeStyle = "#83C6DE";
-                          ctx.lineWidth = 0.5;
+                          var px = cx + (i * 53 + 29) % w - w / 2;
+                          var py = cy + (i * 71 + 13) % h - h / 2;
+                          ctx.globalAlpha = 0.03 + (i % 4) * 0.006;
+                          ctx.strokeStyle = "#83C6DE"; ctx.lineWidth = 0.5;
                           var r = 3 + (i % 3);
                           ctx.beginPath();
                           ctx.moveTo(px, py - r); ctx.lineTo(px + r, py);
                           ctx.lineTo(px, py + r); ctx.lineTo(px - r, py);
                           ctx.closePath(); ctx.stroke();
                       }
-                      ctx.globalAlpha = 1;
                   } },
-        geo:    { hex: "#D6B96C", dark: "#14100A", accent: "#D6B96C",
-                  particles: function (ctx, cx, cy, w, h) {
+        geo:    { hex: "#D6B96C", dark: "#14100A",
+                  glow: function (ctx, cx, cy, w, h) {
                       for (var i = 0; i < 12; i++) {
-                          var px = cx + (i * 37 + 5) % w - w/2;
-                          var py = cy + (i * 43 + 17) % h - h/2;
-                          ctx.globalAlpha = 0.04 + (i % 4) * 0.008;
+                          var px = cx + (i * 37 + 5) % w - w / 2;
+                          var py = cy + (i * 43 + 17) % h - h / 2;
+                          ctx.globalAlpha = 0.035 + (i % 4) * 0.006;
                           ctx.fillStyle = "#D6B96C";
                           ctx.fillRect(px - 2, py - 2, 4 + (i % 3), 4 + (i % 3));
                       }
-                      ctx.globalAlpha = 1;
                   } },
     };
 
     function el(key) { return EL[key] || EL.hydro; }
 
     function capitalize(s) {
-        if (!s) return "";
-        return s.charAt(0).toUpperCase() + s.slice(1);
+        return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
     }
 
     function fmtStat(key, val) {
         if (val == null) return "—";
         var num = Number(val);
-        if (key === "er") return num.toFixed(0) + "%";
-        if (num >= 10000) return Math.round(num / 1000) + "k";
-        return Math.round(num).toLocaleString();
+        return key === "er" ? num.toFixed(0) + "%" : num >= 10000 ? Math.round(num / 1000) + "k" : Math.round(num).toLocaleString();
+    }
+
+    // Truncate text with ellipsis if it exceeds maxWidth
+    function truncate(ctx, text, maxWidth) {
+        if (ctx.measureText(text).width <= maxWidth) return text;
+        var ell = "…";
+        for (var i = text.length - 1; i > 0; i--) {
+            var t = text.substring(0, i) + ell;
+            if (ctx.measureText(t).width <= maxWidth) return t;
+        }
+        return ell;
     }
 
     function roundRect(ctx, x, y, w, h, r) {
@@ -172,18 +164,18 @@
     function drawTierBadge(ctx, label, x, y) {
         if (!label) return;
         var key = (label + "").toLowerCase();
-        var styles = {
-            bis:             { bg: "rgba(214,185,108,0.20)", fg: "#D6B96C" },
-            secondary:       { bg: "rgba(91,155,214,0.20)",  fg: "#5B9BD6" },
-            f2p:             { bg: "rgba(107,199,174,0.20)", fg: "#6BC7AE" },
-            niche:           { bg: "rgba(177,143,224,0.20)", fg: "#B18FE0" },
-            unlisted:        { bg: "rgba(152,162,179,0.20)", fg: "#98A2B3" },
-            unrecognized:    { bg: "rgba(224,137,155,0.20)", fg: "#E0899B" },
+        var m = {
+            bis: { bg: "rgba(214,185,108,0.20)", fg: "#D6B96C" },
+            secondary: { bg: "rgba(91,155,214,0.20)", fg: "#5B9BD6" },
+            f2p: { bg: "rgba(107,199,174,0.20)", fg: "#6BC7AE" },
+            niche: { bg: "rgba(177,143,224,0.20)", fg: "#B18FE0" },
+            unlisted: { bg: "rgba(152,162,179,0.20)", fg: "#98A2B3" },
+            unrecognized: { bg: "rgba(224,137,155,0.20)", fg: "#E0899B" },
             "type mismatch": { bg: "rgba(224,137,155,0.20)", fg: "#E0899B" },
-            hybrid:          { bg: "rgba(152,162,179,0.20)", fg: "#98A2B3" },
-            fragmented:      { bg: "rgba(224,137,155,0.20)", fg: "#E0899B" },
+            hybrid: { bg: "rgba(152,162,179,0.20)", fg: "#98A2B3" },
+            fragmented: { bg: "rgba(224,137,155,0.20)", fg: "#E0899B" },
         };
-        var t = styles[key] || styles.unlisted;
+        var t = m[key] || m.unlisted;
         var bw = 46, bh = 18;
         ctx.save();
         roundRect(ctx, x, y, bw, bh, 9);
@@ -195,6 +187,13 @@
         ctx.textBaseline = "middle";
         ctx.fillText(label, x + bw / 2, y + bh / 2 + 1);
         ctx.restore();
+    }
+
+    // Deterministic integer hash from a string (for per-character variation)
+    function nameSeed(s) {
+        var h = 0;
+        for (var i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+        return Math.abs(h);
     }
 
     // ==========================================================
@@ -213,11 +212,10 @@
         var eHex = e.hex;
         var eDark = e.dark;
 
-        // Grade colour
         var gradeColor = result.embed_color;
         if (!gradeColor) {
             var gl = (result.grade || "")[0];
-            gradeColor = { S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B" }[gl] || "#5B9BD6";
+            gradeColor = ({ S: "#6BC7AE", A: "#5B9BD6", B: "#B18FE0", C: "#D6B96C", D: "#E0899B" })[gl] || "#5B9BD6";
         }
 
         var charName = result.character || "Unknown";
@@ -232,16 +230,13 @@
         ctx.textBaseline = "top";
 
         // ==========================================================
-        // 1. BACKGROUND — deep void + element bloom + particles
+        // 1. BACKGROUND
         // ==========================================================
 
-        // Deep base
         ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // Primary bloom — large soft radial glow centred behind the
-        // splash art, radiating across both halves of the card so
-        // the atmosphere feels unified.
+        // Primary bloom — radiates from the art area across both halves
         var bloomCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.3;
         var bloomCY = H * 0.4;
         var bloom = ctx.createRadialGradient(bloomCX, bloomCY, 10, bloomCX, bloomCY, H * 1.0);
@@ -252,27 +247,26 @@
         ctx.fillStyle = bloom;
         ctx.fillRect(0, 0, W, H);
 
-        // Secondary centre glow — fills the middle area so it never
-        // feels like dead space, using a very soft spread.
-        var centreGlow = ctx.createRadialGradient(SPLASH_LEFT * 0.55, H * 0.5, 10, SPLASH_LEFT * 0.55, H * 0.5, H * 0.7);
+        // Centre atmosphere — subtle glow so the middle never feels dead
+        var centreGlow = ctx.createRadialGradient(SPLASH_LEFT * 0.55, H * 0.5, 10, SPLASH_LEFT * 0.55, H * 0.5, H * 0.65);
         centreGlow.addColorStop(0, eHex + "08");
-        centreGlow.addColorStop(0.5, eHex + "05");
+        centreGlow.addColorStop(0.5, eHex + "04");
         centreGlow.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = centreGlow;
         ctx.fillRect(0, 0, SPLASH_LEFT, H);
 
-        // Element-themed subtle particles in the centre space
-        e.particles(ctx, SPLASH_LEFT * 0.5, H * 0.45, SPLASH_LEFT * 0.7, H * 0.6);
+        // Element-themed environmental particles in the centre zone
+        e.glow(ctx, SPLASH_LEFT * 0.5, H * 0.45, SPLASH_LEFT * 0.65, H * 0.55);
 
-        // Deeper vignette on the far left for text readability
-        var leftShade = ctx.createLinearGradient(0, 0, SPLASH_LEFT * 0.5, 0);
-        leftShade.addColorStop(0, "rgba(8,10,14,0.55)");
+        // Left vignette for text readability
+        var leftShade = ctx.createLinearGradient(0, 0, SPLASH_LEFT * 0.45, 0);
+        leftShade.addColorStop(0, "rgba(8,10,14,0.65)");
         leftShade.addColorStop(1, "rgba(8,10,14,0)");
         ctx.fillStyle = leftShade;
-        ctx.fillRect(0, 0, Math.round(SPLASH_LEFT * 0.5), H);
+        ctx.fillRect(0, 0, Math.round(SPLASH_LEFT * 0.45), H);
 
         // ==========================================================
-        // 2. SPLASH ART — wide blend + rim light
+        // 2. SPLASH ART — per-character framing + rim light
         // ==========================================================
 
         if (splashUrl) {
@@ -285,18 +279,22 @@
             });
 
             if (img) {
-                var pw = W - SPLASH_LEFT;   // 530
-                var ph = H;                 // 540
-
-                // Intentional zoom-out: 78% of cover so we see the
-                // character's full pose and body language, not just the face.
+                var pw = W - SPLASH_LEFT;
+                var ph = H;
                 var imgScale = Math.max(pw / img.naturalWidth, ph / img.naturalHeight) * 0.78;
                 var sw = pw / imgScale;
                 var sh = ph / imgScale;
                 var sx = (img.naturalWidth - sw) / 2;
-                var sy = Math.max(0, (img.naturalHeight - sh) * 0.08);
 
-                // Draw the splash art clipped to the right panel
+                // Per-character vertical framing: use aspect ratio +
+                // name hash so every character gets a unique crop that
+                // prioritises the face/upper body.
+                var aspect = img.naturalHeight / img.naturalWidth;
+                var baseOff = aspect > 1.45 ? 0.03 : (aspect < 1.2 ? 0.18 : 0.07);
+                var seed = nameSeed(charName);
+                var variation = (seed % 14) * 0.006;
+                var sy = Math.max(0, (img.naturalHeight - sh) * Math.min(baseOff + variation, 0.25));
+
                 ctx.save();
                 ctx.beginPath();
                 ctx.rect(SPLASH_LEFT, 0, pw, ph);
@@ -304,8 +302,7 @@
                 ctx.drawImage(img, sx, sy, sw, sh, SPLASH_LEFT, 0, pw, ph);
                 ctx.restore();
 
-                // Primary fade — dark base to transparent, so the left
-                // edge of the art emerges from the dark background.
+                // Primary fade — dark base to transparent
                 var fadeGrad = ctx.createLinearGradient(SPLASH_LEFT, 0, SPLASH_LEFT + ATMO_FADE, 0);
                 fadeGrad.addColorStop(0,    "rgba(8,10,14,1)");
                 fadeGrad.addColorStop(0.2,  "rgba(8,10,14,0.55)");
@@ -315,9 +312,7 @@
                 ctx.fillStyle = fadeGrad;
                 ctx.fillRect(SPLASH_LEFT, 0, ATMO_FADE, ph);
 
-                // Element-coloured overlay — washes the art's left edge
-                // in the character's element so it shares the same colour
-                // atmosphere as the info panel.
+                // Element-coloured overlay on the art's left edge
                 var elBlend = ctx.createLinearGradient(SPLASH_LEFT, 0, SPLASH_LEFT + ATMO_FADE * 0.45, 0);
                 elBlend.addColorStop(0, eDark);
                 elBlend.addColorStop(0.6, eDark + "99");
@@ -325,9 +320,7 @@
                 ctx.fillStyle = elBlend;
                 ctx.fillRect(SPLASH_LEFT, 0, Math.round(ATMO_FADE * 0.45), ph);
 
-                // Subtle rim light — a soft vertical glow on the
-                // visible edge of the art to separate the character
-                // from the background.
+                // Rim light
                 var rimX = SPLASH_LEFT + ATMO_FADE * 0.35;
                 var rim = ctx.createLinearGradient(rimX, 0, rimX + 60, 0);
                 rim.addColorStop(0, eHex + "00");
@@ -344,24 +337,29 @@
 
         var x = PAD;
         ctx.textAlign = "left";
+        var textShadow = "rgba(0,0,0,0.4)";
 
-        // ---- 3a. CHARACTER NAME — largest text, first thing you see ----
+        // ---- 3a. CHARACTER NAME — largest element, clear hierarchy ----
+        ctx.shadowColor = textShadow;
+        ctx.shadowBlur = 6;
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = "700 30px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(charName, x, 24);
+        ctx.font = "700 32px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        var displayName = truncate(ctx, charName, CONTENT_W);
+        ctx.fillText(displayName, x, 24);
+        ctx.shadowBlur = 0;
 
         // ---- 3b. ELEMENT + RARITY ----
-        var y = 62;
+        var y = 64;
         var elemLabel = capitalize(info.element || "");
 
         if (elemLabel) {
-            var badgeW = Math.max(ctx.measureText(elemLabel).width + 16, 50);
+            var badgeW = Math.max(ctx.measureText(elemLabel).width + 18, 52);
             roundRect(ctx, x, y, badgeW, 22, 11);
             ctx.fillStyle = eHex + "22";
             ctx.fill();
             ctx.fillStyle = eHex;
             ctx.font = "600 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(elemLabel, x + 8, y + 6);
+            ctx.fillText(elemLabel, x + 9, y + 6);
         }
 
         var starStr = "";
@@ -374,29 +372,41 @@
             ctx.fillText(starStr, starX, y + 4);
         }
 
-        // ---- 3c. SCORE BLOCK — unified: big number + grade badge + label ----
-        var scoreY = 100;
+        // ---- 3c. SCORE + GRADE — one unified block ----
+        var scoreY = 104;
 
-        // Score number — large, white, dominant
+        // Score number — dominant, with shadow
+        ctx.shadowColor = textShadow;
+        ctx.shadowBlur = 6;
         ctx.fillStyle = "#FFFFFF";
         ctx.font = "700 48px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textBaseline = "top";
         ctx.fillText(scoreText, x, scoreY);
+        ctx.shadowBlur = 0;
 
-        // Grade badge — sits to the right of the score, vertically
-        // aligned to its middle.
-        var scoreNumW = ctx.measureText(scoreText).width;
-        drawGradeBadge(ctx, grade, x + scoreNumW + 12, scoreY + 9, gradeColor);
+        // Grade badge — sits to the right of the score with a fixed gap.
+        // If it would overflow, reduce the gap.
+        var scoreW = ctx.measureText(scoreText).width;
+        var gradeGap = 14;
+        var badgeX = x + scoreW + gradeGap;
+        var badgeMaxX = x + CONTENT_W - 30;  // must fit 30px badge
+        var gradeBadgeSize = 30;
+        if (badgeX + gradeBadgeSize > x + CONTENT_W) {
+            // Not enough room — position grade below the score instead
+            badgeX = x;
+            drawGradeBadge(ctx, grade, badgeX, scoreY + 54, gradeColor);
+        } else {
+            drawGradeBadge(ctx, grade, badgeX, scoreY + 9, gradeColor);
+        }
 
-        // "OVERALL SCORE" label — cleanly below both
-        ctx.fillStyle = "rgba(255,255,255,0.30)";
+        // "OVERALL SCORE" label — below both
+        ctx.fillStyle = "rgba(255,255,255,0.28)";
         ctx.font = "500 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("OVERALL SCORE", x, scoreY + 54);
+        ctx.fillText("OVERALL SCORE", x, scoreY + 56);
 
         // ---- 3d. ACCENT RULE ----
-        var ruleY = scoreY + 68;
+        var ruleY = scoreY + 76;
         ctx.save();
-        ctx.strokeStyle = eHex + "35";
+        ctx.strokeStyle = eHex + "30";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(x, ruleY);
@@ -404,33 +414,32 @@
         ctx.stroke();
         ctx.restore();
 
-        // ---- 3e. CRIT RATIO + CV — grouped together ----
-        var cy = ruleY + 20;
+        // ---- 3e. CRIT RATIO — with CV inline ----
+        var cy = ruleY + 22;
 
-        ctx.fillStyle = "rgba(255,255,255,0.40)";
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
         ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText("CRIT RATIO", x, cy);
 
-        // Crit values — CR / CD and CV in one cohesive line
         ctx.fillStyle = "#FFFFFF";
         ctx.font = "700 18px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         var critLine = "CR " + cr + "%  /  CD " + cd + "%";
         var critW = ctx.measureText(critLine).width;
-        ctx.fillText(critLine, x, cy + 15);
+        ctx.fillText(critLine, x, cy + 16);
 
-        // CV immediately after, separated by a thin dot
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        // CV inline after a thin separator
+        ctx.fillStyle = "rgba(255,255,255,0.32)";
         ctx.font = "500 14px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("·  CV " + cv, x + critW + 12, cy + 17);
+        var cvLabel = " ·  CV " + cv;
+        ctx.fillText(cvLabel, x + critW + 8, cy + 18);
 
-        // ---- 3f. STATS — 2-column grid, organised ----
-        var sy = cy + 56;
+        // ---- 3f. STATS — 2-column, perfectly aligned ----
+        var sy = cy + 62;
 
-        ctx.fillStyle = "rgba(255,255,255,0.40)";
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
         ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText("STATS", x, sy);
 
-        // Order stats by category: HP/ATK/DEF first, then EM/ER
         var statDefs = [
             { key: "hp",  label: "HP",  fmtKey: "hp" },
             { key: "atk", label: "ATK", fmtKey: "atk" },
@@ -442,15 +451,15 @@
         for (var i = 0; i < statDefs.length; i++) {
             var sd = statDefs[i];
             var val = stats[sd.key];
-            if (val != null && val > 0) {
-                entries.push({ label: sd.label, value: fmtStat(sd.fmtKey, val) });
-            }
+            if (val != null && val > 0) entries.push({ label: sd.label, value: fmtStat(sd.fmtKey, val) });
         }
 
         var statTop = sy + 16;
         var colW = CONTENT_W / 2;
-        var labelW = 40;
+        var labelW = 38;
 
+        ctx.shadowColor = textShadow;
+        ctx.shadowBlur = 4;
         for (var j = 0; j < entries.length; j++) {
             var col = j % 2;
             var row = (j / 2) | 0;
@@ -459,23 +468,23 @@
 
             ctx.fillStyle = "rgba(255,255,255,0.60)";
             ctx.font = "500 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.textBaseline = "top";
             ctx.fillText(entries[j].label, ex, ey);
 
             ctx.fillStyle = "#FFFFFF";
             ctx.font = "600 14px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.fillText(entries[j].value, ex + labelW, ey);
         }
+        ctx.shadowBlur = 0;
 
-        // ---- 3g. EQUIPMENT — premium UI components ----
+        // ---- 3g. EQUIPMENT — premium inline badges ----
         var hasWeapon = result.weapon_name;
         var hasSet = result.primary_artifact_set_name;
 
         if (hasWeapon || hasSet) {
             var statRows = Math.ceil(entries.length / 2);
-            var eqTop = statTop + Math.max(statRows, 3) * 24 + 14;
+            var eqTop = statTop + Math.max(statRows, 3) * 24 + 12;
 
-            ctx.fillStyle = "rgba(255,255,255,0.40)";
+            ctx.fillStyle = "rgba(255,255,255,0.35)";
             ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.fillText("EQUIPMENT", x, eqTop);
 
@@ -483,34 +492,37 @@
 
             if (hasWeapon) {
                 var wr = result.weapon_refinement ? "  R" + result.weapon_refinement : "";
-                var weaponLabel = result.weapon_name + wr;
+                var rawW = result.weapon_name + wr;
+
+                // Leave room for the badge (46px) + gap (10px)
+                var maxTextW = CONTENT_W - 56;
+                ctx.font = "500 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                var weaponDisplay = truncate(ctx, rawW, maxTextW);
+                var wW = ctx.measureText(weaponDisplay).width;
 
                 ctx.fillStyle = "rgba(255,255,255,0.80)";
-                ctx.font = "500 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                ctx.textBaseline = "top";
-                ctx.fillText(weaponLabel, x, eqY);
+                ctx.fillText(weaponDisplay, x, eqY);
 
-                // Tier badge — inline, right after the item name
                 if (result.weapon_tier) {
-                    var wLabelW = ctx.measureText(weaponLabel).width;
-                    drawTierBadge(ctx, result.weapon_tier, x + wLabelW + 10, eqY);
+                    drawTierBadge(ctx, result.weapon_tier, x + wW + 10, eqY);
                 }
                 eqY += 24;
             }
 
             if (hasSet) {
                 var setLabel = result.primary_artifact_set_name;
-                if (result.primary_artifact_set_count) {
-                    setLabel += "  " + result.primary_artifact_set_count + "pc";
-                }
+                if (result.primary_artifact_set_count) setLabel += "  " + result.primary_artifact_set_count + "pc";
+
+                var maxTextW = CONTENT_W - 56;
+                ctx.font = "500 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                var setDisplay = truncate(ctx, setLabel, maxTextW);
+                var sW = ctx.measureText(setDisplay).width;
 
                 ctx.fillStyle = "rgba(255,255,255,0.80)";
-                ctx.font = "500 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                ctx.fillText(setLabel, x, eqY);
+                ctx.fillText(setDisplay, x, eqY);
 
                 if (result.artifact_tier) {
-                    var sLabelW = ctx.measureText(setLabel).width;
-                    drawTierBadge(ctx, result.artifact_tier, x + sLabelW + 10, eqY);
+                    drawTierBadge(ctx, result.artifact_tier, x + sW + 10, eqY);
                 }
             }
         }
