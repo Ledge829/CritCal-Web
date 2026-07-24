@@ -338,16 +338,12 @@
 
         var x = PAD;
         ctx.textAlign = "left";
-        var textShadow = "rgba(0,0,0,0.4)";
 
         // ---- 3a. CHARACTER NAME — largest element, clear hierarchy ----
-        ctx.shadowColor = textShadow;
-        ctx.shadowBlur = 6;
         ctx.fillStyle = "#FFFFFF";
         ctx.font = "700 32px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         var displayName = truncate(ctx, charName, CONTENT_W);
         ctx.fillText(displayName, x, 24);
-        ctx.shadowBlur = 0;
 
         // ---- 3b. ELEMENT + RARITY ----
         var y = 64;
@@ -376,13 +372,10 @@
         // ---- 3c. SCORE + GRADE — one unified block ----
         var scoreY = 104;
 
-        // Score number — dominant, with shadow
-        ctx.shadowColor = textShadow;
-        ctx.shadowBlur = 6;
+        // Score number — dominant, fully opaque
         ctx.fillStyle = "#FFFFFF";
         ctx.font = "700 48px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText(scoreText, x, scoreY);
-        ctx.shadowBlur = 0;
 
         // Grade badge — sits to the right of the score with a fixed gap.
         // If it would overflow, reduce the gap.
@@ -459,8 +452,6 @@
         var colW = CONTENT_W / 2;
         var labelW = 38;
 
-        ctx.shadowColor = textShadow;
-        ctx.shadowBlur = 4;
         for (var j = 0; j < entries.length; j++) {
             var col = j % 2;
             var row = (j / 2) | 0;
