@@ -268,7 +268,6 @@ function renderResult(data) {
     `;
 
     // Wire up the download + share buttons
-    console.log("result rendered, share btn in DOM:", !!document.getElementById("share-link-btn"));
     setTimeout(wireButtons, 0);
 }
 

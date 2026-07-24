@@ -17,6 +17,7 @@
     // GRADE_COLORS from script.js (global)
     var HISTORY_KEY = "critcal_uid_history";
     var MAX_HISTORY = 5;
+    var _currentUid = null;
 
     // ==========================================================
     // SEARCH HISTORY
@@ -116,6 +117,7 @@
                 if (!data.characters || data.characters.length === 0) {
                     throw new ApiError("No showcased characters found for this UID.", 404);
                 }
+                _currentUid = data.uid;
                 renderResults(data);
             })
             .catch(function (err) {
@@ -291,6 +293,27 @@
             closeBtn.addEventListener("click", function (e) {
                 e.stopPropagation();
                 closeOverlay(overlay);
+            });
+        }
+
+        // Share button — copies a link to this UID search.
+        var shareBtn = overlay.querySelector(".uid-share-overlay-btn");
+        if (shareBtn) {
+            shareBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                var url = window.location.origin + window.location.pathname + "?uid=" + encodeURIComponent(_currentUid || "");
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(function () {
+                        shareBtn.textContent = "Copied!";
+                        setTimeout(function () {
+                            shareBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share Build';
+                        }, 2000);
+                    }).catch(function () {
+                        prompt("Copy this link:", url);
+                    });
+                } else {
+                    prompt("Copy this link:", url);
+                }
             });
         }
 
@@ -560,11 +583,15 @@
             // Recommendations
             recsHtml +
 
-            // Download image button
-            '<div style="margin-top:14px;text-align:center;">' +
+            // Download image + share buttons
+            '<div style="margin-top:14px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">' +
                 '<button type="button" class="btn btn-ghost uid-dl-btn" style="font-size:12px;padding:9px 16px;">' +
                     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
                     ' Download Image' +
+                '</button>' +
+                '<button type="button" class="btn btn-primary uid-share-overlay-btn" style="font-size:12px;padding:9px 16px;">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
+                    ' Share Build' +
                 '</button>' +
             '</div>';
     }
