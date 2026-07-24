@@ -15,8 +15,7 @@ let _lastResult = null;
 let _lastCharInfo = null;
 
 // ---------- Autocomplete + character preview data ----------
-fetch(`${API_BASE}/characters`)
-    .then((r) => r.json())
+cachedFetch(`${API_BASE}/characters`, "characters")
     .then((data) => {
         allCharacters = data.characters || [];
         const frag = document.createDocumentFragment();
@@ -57,6 +56,23 @@ const prefillCharacter = params.get("character");
 if (prefillCharacter) {
     characterInput.value = prefillCharacter;
 }
+// Pre-fill other fields from shareable URL params
+const paramMap = {
+    "crit_rate": "crit_rate",
+    "crit_dmg": "crit_dmg",
+    "atk": "atk",
+    "hp": "hp",
+    "def": "def",
+    "em": "elemental_mastery",
+    "er": "energy_recharge",
+    "weapon": "weapon",
+    "artifacts": "artifacts",
+};
+Object.keys(paramMap).forEach((key) => {
+    const val = params.get(key);
+    const el = document.getElementById(paramMap[key]);
+    if (val && el) el.value = val;
+});
 
 // ---------- Form submission ----------
 form.addEventListener("submit", async (event) => {
@@ -237,43 +253,78 @@ function renderResult(data) {
             ${benchmarkSection}
             ${recommendationsSection}
 
-            <div class="result-section" style="text-align:center;">
+            <div class="result-section" style="text-align:center; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
                 <button type="button" class="btn btn-ghost" id="download-card-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Download Image
+                </button>
+                <button type="button" class="btn btn-ghost" id="share-link-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                    Share
                 </button>
             </div>
 
         </div>
     `;
 
-    // Wire up the download button
-    setTimeout(wireDownload, 0);
+    // Wire up the download + share buttons
+    setTimeout(wireButtons, 0);
 }
 
-function wireDownload() {
-    const btn = document.getElementById("download-card-btn");
-    if (!btn) return;
-    btn.addEventListener("click", async function () {
-        if (!_lastResult) return;
-        btn.disabled = true;
-        btn.textContent = "Generating...";
-        try {
-            const blob = await window.generateRatingCard(_lastResult, _lastCharInfo || {});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = (_lastResult.character || "build") + "-rating.png";
-            a.click();
-            URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error("Card generation failed:", err);
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+function wireButtons() {
+    // Download button
+    const dlBtn = document.getElementById("download-card-btn");
+    if (dlBtn) {
+        dlBtn.addEventListener("click", async function () {
+            if (!_lastResult) return;
+            dlBtn.disabled = true;
+            dlBtn.textContent = "Generating...";
+            try {
+                const blob = await window.generateRatingCard(_lastResult, _lastCharInfo || {});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = (_lastResult.character || "build") + "-rating.png";
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error("Card generation failed:", err);
+            } finally {
+                dlBtn.disabled = false;
+                dlBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Download Image`;
-        }
-    });
+            }
+        });
+    }
+
+    // Share button — copies a shareable URL with the build params
+    const shareBtn = document.getElementById("share-link-btn");
+    if (shareBtn) {
+        shareBtn.addEventListener("click", function () {
+            if (!_lastResult) return;
+            const params = new URLSearchParams();
+            params.set("character", _lastResult.character || "");
+            params.set("crit_rate", _lastResult.crit_rate != null ? _lastResult.crit_rate : "");
+            params.set("crit_dmg", _lastResult.crit_dmg != null ? _lastResult.crit_dmg : "");
+            params.set("atk", _lastResult.stats_used ? _lastResult.stats_used.atk || "" : "");
+            if (_lastResult.stats_used) {
+                if (_lastResult.stats_used.hp) params.set("hp", _lastResult.stats_used.hp);
+                if (_lastResult.stats_used.def) params.set("def", _lastResult.stats_used.def);
+                if (_lastResult.stats_used.elemental_mastery) params.set("em", _lastResult.stats_used.elemental_mastery);
+                if (_lastResult.stats_used.energy_recharge) params.set("er", _lastResult.stats_used.energy_recharge);
+            }
+            if (_lastResult.weapon_name) params.set("weapon", _lastResult.weapon_name + (_lastResult.weapon_refinement ? " r" + _lastResult.weapon_refinement : ""));
+            if (_lastResult.primary_artifact_set_name) params.set("artifacts", _lastResult.primary_artifact_set_count + "pc " + _lastResult.primary_artifact_set_name);
+
+            const url = window.location.origin + "/analyze.html?" + params.toString();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function () {
+                    shareBtn.textContent = "Copied!";
+                    setTimeout(function () { shareBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share`; }, 2000);
+                }).catch(function () { prompt("Copy this link:", url); });
+            } else {
+                prompt("Copy this link:", url);
+            }
+        });
+    }
 }
-
-

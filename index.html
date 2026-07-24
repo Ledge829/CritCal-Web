@@ -240,11 +240,11 @@
                     <span>Characters</span>
                 </div>
                 <div class="about-stat">
-                    <strong>210+</strong>
+                    <strong id="home-weapon-count">210+</strong>
                     <span>Weapons</span>
                 </div>
                 <div class="about-stat">
-                    <strong>60+</strong>
+                    <strong id="home-set-count">60+</strong>
                     <span>Sets</span>
                 </div>
             </div>
@@ -253,6 +253,24 @@
     </div>
 
 </div>
+
+<section class="home-char-section fade-up fade-up-3" aria-labelledby="home-char-heading">
+    <div class="home-char-header">
+        <h2 class="eyebrow" id="home-char-heading">Characters</h2>
+        <a href="characters.html" class="home-char-view-all">View all</a>
+    </div>
+    <div class="home-char-pills" id="home-char-pills" role="group" aria-label="Filter by element">
+        <button type="button" class="element-pill is-active" data-el="" aria-pressed="true">All</button>
+        <button type="button" class="element-pill" data-el="pyro" style="--el-color:#E0785C" aria-pressed="false">Pyro</button>
+        <button type="button" class="element-pill" data-el="hydro" style="--el-color:#5B9BD6" aria-pressed="false">Hydro</button>
+        <button type="button" class="element-pill" data-el="anemo" style="--el-color:#6BC7AE" aria-pressed="false">Anemo</button>
+        <button type="button" class="element-pill" data-el="electro" style="--el-color:#B18FE0" aria-pressed="false">Electro</button>
+        <button type="button" class="element-pill" data-el="dendro" style="--el-color:#97BE58" aria-pressed="false">Dendro</button>
+        <button type="button" class="element-pill" data-el="cryo" style="--el-color:#83C6DE" aria-pressed="false">Cryo</button>
+        <button type="button" class="element-pill" data-el="geo" style="--el-color:#D6B96C" aria-pressed="false">Geo</button>
+    </div>
+    <div id="home-char-grid" class="home-char-grid"></div>
+</section>
 
 <section style="text-align:center; max-width:480px; margin:40px auto 0; padding:0 6%;">
     <p class="furina-message-text text-dim" style="font-style:italic; font-size:14.5px;">"Ready for another evaluation?"</p>
@@ -284,6 +302,53 @@
         const c = { key: row.dataset.key, name: row.dataset.name, element: row.dataset.element };
         row.querySelector(".update-avatar").innerHTML = portraitInnerHtml(c);
     });
+
+    // ---------- Homepage character mini-grid ----------
+    (function () {
+        const grid = document.getElementById("home-char-grid");
+        const pills = document.querySelectorAll("#home-char-pills .element-pill");
+        if (!grid) return;
+
+        let allChars = [];
+        let activeEl = "";
+
+        function renderGrid() {
+            const filtered = activeEl ? allChars.filter((c) => c.element === activeEl) : allChars;
+            if (!filtered.length) {
+                grid.innerHTML = '<div class="home-char-loading">No characters match.</div>';
+                return;
+            }
+            grid.innerHTML = filtered.slice(0, 24).map((c) => {
+                const color = elementColor(c.element);
+                const initial = (c.name || "?").charAt(0).toUpperCase();
+                return '<a class="home-char-tile" href="analyze.html?character=' + encodeURIComponent(c.name) + '" style="--el-color:' + color + '">' +
+                    '<span class="home-char-tile-avatar" style="--el-color:' + color + '">' +
+                        portraitInnerHtml(c) +
+                    '</span>' +
+                    '<span class="home-char-tile-name">' + escapeHtml(c.name) + '</span>' +
+                '</a>';
+            }).join("");
+        }
+
+        pills.forEach((pill) => {
+            pill.addEventListener("click", function () {
+                pills.forEach((p) => { p.classList.remove("is-active"); p.setAttribute("aria-pressed", "false"); });
+                this.classList.add("is-active");
+                this.setAttribute("aria-pressed", "true");
+                activeEl = this.getAttribute("data-el") || "";
+                renderGrid();
+            });
+        });
+
+        cachedFetch(API_BASE + "/characters", "characters").then(function (data) {
+            if (data && data.characters) {
+                allChars = data.characters;
+                renderGrid();
+            } else {
+                grid.innerHTML = '<div class="home-char-loading">Could not load characters.</div>';
+            }
+        });
+    })();
 </script>
 
 </body>

@@ -6,6 +6,31 @@ console.log("We are live ~ Ledge");
 // SyntaxError, since plain scripts share one global scope).
 const API_BASE = "https://critcal.onrender.com";
 
+// ---------- Simple cache helper (localStorage with TTL) ----------
+const CACHE_PREFIX = "critcal_";
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function cachedFetch(url, cacheKey) {
+    try {
+        const cached = localStorage.getItem(CACHE_PREFIX + cacheKey);
+        if (cached) {
+            const { data, time } = JSON.parse(cached);
+            if (Date.now() - time < CACHE_TTL) {
+                return Promise.resolve(data);
+            }
+        }
+    } catch (_) { /* ignore corrupt cache */ }
+    return fetch(url)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            try {
+                localStorage.setItem(CACHE_PREFIX + cacheKey, JSON.stringify({ data: data, time: Date.now() }));
+            } catch (_) { /* storage full, ignore */ }
+            return data;
+        })
+        .catch(function () { return null; });
+}
+
 // ---------- Time-of-day greeting (homepage only) ----------
 const greeting = document.querySelector(".greeting-text");
 
@@ -126,17 +151,29 @@ function tierClass(tier) {
 // ---------- Live character count (any page with a #char-count-* element) ----------
 const countElements = document.querySelectorAll('[id^="char-count"]');
 if (countElements.length > 0 && typeof API_BASE !== "undefined") {
-    fetch(`${API_BASE}/characters`)
-        .then((r) => r.json())
+    cachedFetch(`${API_BASE}/characters`, "characters")
         .then((data) => {
-            const count = data.count;
-            if (count) {
-                countElements.forEach((el) => { el.textContent = count; });
+            if (data && data.count) {
+                countElements.forEach((el) => { el.textContent = data.count; });
             }
         })
         .catch(() => {
             // Leave the static fallback ("120+") in place.
         });
+}
+
+// ---------- Live stats on about page (weapons, sets) ----------
+const weaponCountEls = document.querySelectorAll('[id$="-weapon-count"]');
+const setCountEls = document.querySelectorAll('[id$="-set-count"]');
+if ((weaponCountEls.length > 0 || setCountEls.length > 0) && typeof API_BASE !== "undefined") {
+    cachedFetch(`${API_BASE}/stats`, "stats")
+        .then((data) => {
+            if (data) {
+                weaponCountEls.forEach((el) => { el.textContent = data.weapons + "+"; });
+                setCountEls.forEach((el) => { el.textContent = data.artifact_sets_modern + "+"; });
+            }
+        })
+        .catch(() => {});
 }
 
 // ---------- Homepage UID search: redirect to uid-search.html ----------

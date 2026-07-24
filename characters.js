@@ -10,9 +10,9 @@ let activeElement = "";
 
 grid.innerHTML = renderSkeletons(12);
 
-fetch(`${API_BASE}/characters`)
-    .then((r) => r.json())
+cachedFetch(`${API_BASE}/characters`, "characters")
     .then((data) => {
+        if (!data || !data.characters) throw new Error("no data");
         allCharacters = data.characters || [];
         render();
     })
