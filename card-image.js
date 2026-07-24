@@ -238,30 +238,19 @@
         ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // Element bloom — wide, ultra-soft coloured glow with no
-        // visible ring bands. Very low opacity, large radius, smooth
-        // single-gradient transition avoids the hard-edge ring look.
-        var bloomCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.2;
-        var bloomCY = H * 0.4;
-        var bloom = ctx.createRadialGradient(bloomCX, bloomCY, H * 0.05, bloomCX, bloomCY, H * 1.0);
-        bloom.addColorStop(0, eHex + "12");   // ~7% — barely warm centre
-        bloom.addColorStop(0.45, eHex + "06");// ~2% — fades smoothly
-        bloom.addColorStop(1, "#080A0E");
-        ctx.fillStyle = bloom;
-        ctx.fillRect(0, 0, W, H);
+        // Localised glow behind the splash art only — never touches
+        // the left info panel. The character's element colour lives
+        // in the art itself, not as a full-canvas wash.
+        var glowCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.3;
+        var glowCY = H * 0.45;
+        var glow = ctx.createRadialGradient(glowCX, glowCY, H * 0.02, glowCX, glowCY, H * 0.45);
+        glow.addColorStop(0, eHex + "20");
+        glow.addColorStop(0.5, eHex + "06");
+        glow.addColorStop(1, "#080A0E");
+        ctx.fillStyle = glow;
+        ctx.fillRect(SPLASH_LEFT, 0, W - SPLASH_LEFT, H);
 
-        // Spotlight — tiny extra warmth on the left panel, invisible
-        // as a shape, only felt as slightly less cold behind the text.
-        var spotCX = SPLASH_LEFT * 0.4;
-        var spotCY = H * 0.45;
-        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.08, spotCX, spotCY, H * 0.5);
-        spot.addColorStop(0, eHex + "0A");   // ~4%
-        spot.addColorStop(0.6, eHex + "03"); // ~1%
-        spot.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = spot;
-        ctx.fillRect(0, 0, SPLASH_LEFT, H);
-
-        // Element-themed environmental particles in the centre zone
+        // Element-themed environmental particles — subtle identity
         e.glow(ctx, SPLASH_LEFT * 0.5, H * 0.45, SPLASH_LEFT * 0.65, H * 0.55);
 
         // ==========================================================
