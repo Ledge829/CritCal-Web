@@ -164,19 +164,17 @@
         ctx.fillStyle = "#161A24";
         ctx.fillRect(DIVIDER_RIGHT, 0, W - DIVIDER_RIGHT, H);
 
-        // ── ONE large radial spotlight ──
-        // Centered slightly right of the divider so it naturally spreads
-        // behind both the divider and the character artwork. Single soft
-        // gradient, no rings, no hard edges, no geometric shapes.
-        var spotCX = DIVIDER_RIGHT + 30;
-        var spotCY = H * 0.42;
-        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.01, spotCX, spotCY, H * 0.85);
-        spot.addColorStop(0, eHex + "10");
-        spot.addColorStop(0.35, eHex + "06");
-        spot.addColorStop(0.65, eHex + "02");
+        // ── ONE very large, extremely soft radial spotlight ──
+        // Centered slightly right of the divider. Large inner radius
+        // eliminates any visible centre spot; very low opacity keeps
+        // it as ambient atmosphere rather than a visible light source.
+        var spotCX = DIVIDER_RIGHT + 25;
+        var spotCY = H * 0.40;
+        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.15, spotCX, spotCY, H * 0.92);
+        spot.addColorStop(0, eHex + "08");
+        spot.addColorStop(0.5, eHex + "03");
         spot.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = spot;
-        // Spread across the divider + artwork area only
         ctx.fillRect(DIVIDER_LEFT, 0, W - DIVIDER_LEFT, H);
 
         // ── Glass divider between panels ──
