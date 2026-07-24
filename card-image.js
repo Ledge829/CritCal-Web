@@ -235,8 +235,24 @@
         // just makes it pop. No coloured washes, no visible rings.
         // ==========================================================
 
-        ctx.fillStyle = "#1B202C";
+        // Base: dark slate that's clearly visible. The right side
+        // (where the splash art sits) is slightly brighter so the
+        // character pops naturally without artificial glow.
+        var bgGrad = ctx.createLinearGradient(0, 0, W, 0);
+        bgGrad.addColorStop(0, "#272F42");
+        bgGrad.addColorStop(0.55, "#2C3548");
+        bgGrad.addColorStop(1, "#323B50");
+        ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, W, H);
+
+        // Light spill at the panel seam — barely visible, just enough
+        // to soften the transition between the two halves.
+        var spill = ctx.createLinearGradient(SPLASH_LEFT - 10, 0, SPLASH_LEFT + 20, 0);
+        spill.addColorStop(0, "rgba(255,255,255,0)");
+        spill.addColorStop(0.5, "rgba(255,255,255,0.04)");
+        spill.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = spill;
+        ctx.fillRect(SPLASH_LEFT - 10, 0, 30, H);
 
         // Environmental particles — subtle element identity
         e.glow(ctx, SPLASH_LEFT * 0.5, H * 0.45, SPLASH_LEFT * 0.65, H * 0.55);
