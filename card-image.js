@@ -238,15 +238,15 @@
         ctx.fillStyle = "#1B202C";
         ctx.fillRect(0, 0, W, H);
 
-        // Bright highlight behind the splash art — makes the character
-        // pop clearly against the background. White at moderate opacity
-        // so the art stays vibrant, not washed out.
-        var hlCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.25;
-        var hlCY = H * 0.35;
-        var hl = ctx.createRadialGradient(hlCX, hlCY, H * 0.02, hlCX, hlCY, H * 0.5);
-        hl.addColorStop(0, "rgba(255,255,255,0.18)");
-        hl.addColorStop(0.4, "rgba(255,255,255,0.06)");
-        hl.addColorStop(0.7, "rgba(255,255,255,0.02)");
+        // Soft highlight behind the splash art — spreads across the
+        // entire right panel with no visible hot spot. Large inner
+        // radius prevents the white-dot problem entirely.
+        var hlCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.2;
+        var hlCY = H * 0.38;
+        var hl = ctx.createRadialGradient(hlCX, hlCY, H * 0.15, hlCX, hlCY, H * 0.55);
+        hl.addColorStop(0, "rgba(255,255,255,0.08)");
+        hl.addColorStop(0.45, "rgba(255,255,255,0.03)");
+        hl.addColorStop(0.75, "rgba(255,255,255,0.01)");
         hl.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = hl;
         ctx.fillRect(SPLASH_LEFT, 0, W - SPLASH_LEFT, H);
@@ -254,11 +254,11 @@
         // Element colour glow — soft tint behind the character that
         // subtly signals their element (blue for Hydro, green for
         // Dendro, etc.) without overwhelming the art.
-        var colCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.3;
+        var colCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.25;
         var colCY = H * 0.4;
-        var col = ctx.createRadialGradient(colCX, colCY, H * 0.03, colCX, colCY, H * 0.4);
-        col.addColorStop(0, eHex + "18");
-        col.addColorStop(0.5, eHex + "06");
+        var col = ctx.createRadialGradient(colCX, colCY, H * 0.12, colCX, colCY, H * 0.38);
+        col.addColorStop(0, eHex + "0C");
+        col.addColorStop(0.5, eHex + "04");
         col.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = col;
         ctx.fillRect(SPLASH_LEFT, 0, W - SPLASH_LEFT, H);
