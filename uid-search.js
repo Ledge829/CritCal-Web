@@ -44,13 +44,14 @@
     function renderHistory() {
         if (!historyArea) return;
         var h = getHistory();
+        var html = '<div class="uid-history-label">Recent UIDs</div>';
         if (h.length === 0) {
-            historyArea.classList.remove("is-visible");
+            html += '<div class="uid-history-empty">No recent searches yet. Enter a UID above to get started.</div>';
+            historyArea.innerHTML = html;
+            historyArea.classList.add("is-visible");
             return;
         }
-        var html =
-            '<div class="uid-history-label">Recent UIDs</div>' +
-            '<div class="uid-history-pills">';
+        html += '<div class="uid-history-pills">';
         for (var i = 0; i < h.length; i++) {
             html +=
                 '<span class="uid-history-pill" data-uid="' + escapeHtml(h[i]) + '">' +
@@ -59,7 +60,7 @@
                 '</span>';
         }
         html +=
-            '<span class="uid-history-pill" style="border-color:transparent;font-size:10px;color:var(--text-faint);cursor:pointer;" id="uid-clear-all">Clear</span>' +
+            '<span class="uid-history-pill" id="uid-clear-all">Clear all</span>' +
             '</div>';
         historyArea.innerHTML = html;
         historyArea.classList.add("is-visible");

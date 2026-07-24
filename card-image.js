@@ -387,12 +387,12 @@
             }
         }
 
-        // ---- 3g. FOOTER ----
-        ctx.textAlign = "center";
-        ctx.fillStyle = "rgba(255,255,255,0.2)";
-        ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        // ---- 3g. FOOTER - tiny wordmark, bottom-right corner ----
+        ctx.textAlign = "right";
+        ctx.fillStyle = "rgba(255,255,255,0.11)";
+        ctx.font = "400 8.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textBaseline = "bottom";
-        ctx.fillText("CritCal  ·  Open Source  ·  Built by the community", W / 2, H - 18);
+        ctx.fillText("CritCal", W - 18, H - 16);
 
         // ==========================================================
         // 4. OUTPUT

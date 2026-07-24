@@ -1525,11 +1525,15 @@ footer a:hover { color: var(--primary); }
 /* ---- Search history ---- */
 
 .uid-history-area {
-    margin-top: 10px;
-    display: none;
+    margin-top: 14px;
+    min-height: 20px;
 }
 
-.uid-history-area.is-visible { display: block; }
+.uid-history-empty {
+    font-size: 12px;
+    color: var(--text-faint);
+    padding: 6px 0;
+}
 
 .uid-history-label {
     font-size: 10.5px;
