@@ -24,13 +24,10 @@
     var H = 540;
     var SCALE = 2;
 
-    // Balanced 50/50 layout with centered glass divider
-    var DIVIDER_LEFT = 460;     // divider starts here
-    var DIVIDER_RIGHT = 540;    // divider ends here (80px wide)
-    var SPLASH_LEFT = DIVIDER_RIGHT;  // artwork starts after divider
-    var PAD_LEFT = 32;          // left panel content padding (safe margin)
-    var CONTENT_W = DIVIDER_LEFT - PAD_LEFT * 2;  // 460 - 64 = 396px
-    var ATMO_FADE = 120;        // width of the art edge gradient fade
+    var SPLASH_LEFT = 540;    // right panel starts here (54%)
+    var PAD_LEFT = 30;         // left panel content padding
+    var CONTENT_W = SPLASH_LEFT - PAD_LEFT * 2;  // ~480px
+    var ATMO_FADE = 120;       // width of the art fade-in gradient
 
     // ==========================================================
     // ELEMENT ATMOSPHERE PROFILES
@@ -149,47 +146,24 @@
         ctx.textBaseline = "top";
 
         // ==========================================================
-        // 1. BACKGROUND — dark canvas + element spotlight + glass divider
+        // 1. BACKGROUND — deep void base + element atmosphere
         // ==========================================================
 
-        // Dark base for the entire card
+        // Solid dark base
         ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // Left panel — clean dark surface for text readability
-        ctx.fillStyle = "#11141B";
-        ctx.fillRect(0, 0, DIVIDER_LEFT, H);
-
-        // Right panel — slightly lifted dark tone behind the artwork
-        ctx.fillStyle = "#161A24";
-        ctx.fillRect(DIVIDER_RIGHT, 0, W - DIVIDER_RIGHT, H);
-
-        // ── ONE very large, extremely soft radial spotlight ──
-        // Centered slightly right of the divider. Large inner radius
-        // eliminates any visible centre spot; very low opacity keeps
-        // it as ambient atmosphere rather than a visible light source.
-        var spotCX = DIVIDER_RIGHT + 25;
-        var spotCY = H * 0.40;
-        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.15, spotCX, spotCY, H * 0.92);
-        spot.addColorStop(0, eHex + "08");
-        spot.addColorStop(0.5, eHex + "03");
-        spot.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = spot;
-        ctx.fillRect(DIVIDER_LEFT, 0, W - DIVIDER_LEFT, H);
-
-        // ── Glass divider between panels ──
-        // A translucent vertical strip with a faint center highlight.
-        // 80px wide, centered between the left and right halves.
-        var divGrad = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
-        divGrad.addColorStop(0, "rgba(255,255,255,0)");
-        divGrad.addColorStop(0.2, "rgba(255,255,255,0.025)");
-        divGrad.addColorStop(0.45, "rgba(255,255,255,0.05)");
-        divGrad.addColorStop(0.50, "rgba(255,255,255,0.07)");  // faint centre highlight
-        divGrad.addColorStop(0.55, "rgba(255,255,255,0.05)");
-        divGrad.addColorStop(0.8, "rgba(255,255,255,0.025)");
-        divGrad.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = divGrad;
-        ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_RIGHT - DIVIDER_LEFT, H);
+        // Element atmosphere — a very soft, wide radial glow that
+        // never forms visible rings or hard edges.
+        var atmos = ctx.createRadialGradient(
+            SPLASH_LEFT - 100, H * 0.4, H * 0.12,
+            SPLASH_LEFT - 100, H * 0.4, H * 0.9
+        );
+        atmos.addColorStop(0, eHex + "0C");
+        atmos.addColorStop(0.5, eHex + "04");
+        atmos.addColorStop(1, "#080A0E");
+        ctx.fillStyle = atmos;
+        ctx.fillRect(0, 0, W, H);
 
         // ==========================================================
         // 2. SPLASH ART (right side) — with gradient blend into bg
@@ -243,41 +217,27 @@
         // ==========================================================
 
         ctx.textAlign = "left";
+        ctx.textBaseline = "top";
 
-        // ---- 3a. GRADE + SCORE ----
+        // ---- 3a. CHARACTER NAME ----
         var y = 30;
-        ctx.fillStyle = gradeColor;
-        ctx.font = "700 48px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(grade, PAD_LEFT, y);
-
-        // Score beside grade
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = "600 20px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText(String(score), PAD_LEFT + 60, y + 8);
-
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.font = "500 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("OVERALL SCORE", PAD_LEFT + 60, y + 32);
-
-        // ---- 3b. CHARACTER NAME ----
-        y = 90;
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "700 26px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "700 32px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText(charName, PAD_LEFT, y);
 
-        // ---- 3c. ELEMENT BADGE + RARITY STARS ----
-        y = 126;
+        // ---- 3b. ELEMENT BADGE + RARITY STARS ----
+        y = 72;
         var elemLabel = capitalize(info.element || "");
+        var badgeW = 0;
 
         if (elemLabel) {
-            var badgeW = Math.max(ctx.measureText(elemLabel).width + 16, 50);
+            badgeW = Math.max(ctx.measureText(elemLabel).width + 16, 50);
             roundRectPath(ctx, PAD_LEFT, y, badgeW, 20, 10);
             ctx.fillStyle = eHex + "22";
             ctx.fill();
 
             ctx.fillStyle = eHex;
             ctx.font = "600 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.textBaseline = "top";
             ctx.fillText(elemLabel, PAD_LEFT + 8, y + 5);
         }
 
@@ -288,12 +248,40 @@
         if (starStr) {
             ctx.fillStyle = rarity >= 5 ? "#D6B96C" : "#B79EDB";
             ctx.font = "12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.textBaseline = "top";
             ctx.fillText(starStr, PAD_LEFT + (elemLabel ? badgeW + 10 : 0), y + 4);
         }
 
+        // ---- 3c. BIG SCORE + GRADE BADGE ----
+        y = 106;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "700 46px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        var scoreStr = String(score);
+        ctx.fillText(scoreStr, PAD_LEFT, y);
+        var scoreW = ctx.measureText(scoreStr).width;
+
+        // Grade badge: bordered rounded square, sits beside the score
+        var gbSize = 34;
+        var gbX = PAD_LEFT + scoreW + 14;
+        var gbY = y + 4;
+        roundRectPath(ctx, gbX, gbY, gbSize, gbSize, 8);
+        ctx.fillStyle = gradeColor + "1A";
+        ctx.fill();
+        ctx.strokeStyle = gradeColor;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = gradeColor;
+        ctx.font = "700 16px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(grade, gbX + gbSize / 2, gbY + gbSize / 2 - 8);
+        ctx.textAlign = "left";
+
+        // "OVERALL SCORE" label — stays under the score number, inside CONTENT_W
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.font = "500 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("OVERALL SCORE", PAD_LEFT, y + 54);
+
         // ---- 3d. ACCENT RULE ----
-        var ruleY = y + 34;
+        var ruleY = y + 78;
         ctx.save();
         ctx.strokeStyle = eHex + "35";
         ctx.lineWidth = 1;
@@ -309,7 +297,6 @@
         // Label
         ctx.fillStyle = "rgba(255,255,255,0.45)";
         ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textBaseline = "top";
         ctx.fillText("CRIT RATIO", PAD_LEFT, cy);
 
         // CR / CD values
@@ -317,13 +304,13 @@
         ctx.font = "700 17px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         var critLine = cr + "% / " + cd + "%";
         ctx.fillText(critLine, PAD_LEFT, cy + 15);
+        var critLineW = ctx.measureText(critLine).width;
 
-        // CV — right-aligned
-        ctx.textAlign = "right";
+        // CV — inline after the crit line, separated by a dot (stays left-anchored
+        // so it can never run off the left edge of the card)
         ctx.fillStyle = "rgba(255,255,255,0.55)";
         ctx.font = "500 14px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("CV " + cv, PAD_LEFT + CONTENT_W, cy + 17);
-        ctx.textAlign = "left";
+        ctx.fillText("·  CV " + cv, PAD_LEFT + critLineW + 14, cy + 17);
 
         // ---- 3f. STATS ----
         var sy = cy + 52;
