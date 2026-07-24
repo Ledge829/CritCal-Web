@@ -235,41 +235,43 @@
         // just makes it pop. No coloured washes, no visible rings.
         // ==========================================================
 
-        ctx.fillStyle = "#080A0E";
+        ctx.fillStyle = "#11141B";
         ctx.fillRect(0, 0, W, H);
 
-        // Soft bright highlight behind the splash art — a pale glow
-        // that makes the character stand out against the dark bg.
-        // Uses white at very low opacity; pure brighten, not colorize.
-        var hlCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.3;
-        var hlCY = H * 0.38;
-        var hl = ctx.createRadialGradient(hlCX, hlCY, H * 0.01, hlCX, hlCY, H * 0.45);
-        hl.addColorStop(0, "rgba(255,255,255,0.04)");
-        hl.addColorStop(0.55, "rgba(255,255,255,0.01)");
+        // Bright highlight behind the splash art — makes the character
+        // pop clearly against the background. White at moderate opacity
+        // so the art stays vibrant, not washed out.
+        var hlCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.25;
+        var hlCY = H * 0.35;
+        var hl = ctx.createRadialGradient(hlCX, hlCY, H * 0.02, hlCX, hlCY, H * 0.5);
+        hl.addColorStop(0, "rgba(255,255,255,0.18)");
+        hl.addColorStop(0.4, "rgba(255,255,255,0.06)");
+        hl.addColorStop(0.7, "rgba(255,255,255,0.02)");
         hl.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = hl;
         ctx.fillRect(SPLASH_LEFT, 0, W - SPLASH_LEFT, H);
 
-        // Whisper of element colour behind the character — barely
-        // there, just enough that a Hydro character feels slightly
-        // blue-tinted behind them vs a Pyro character. 2% opacity.
-        var colCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.35;
-        var colCY = H * 0.42;
-        var col = ctx.createRadialGradient(colCX, colCY, H * 0.02, colCX, colCY, H * 0.3);
-        col.addColorStop(0, eHex + "06");
+        // Element colour glow — soft tint behind the character that
+        // subtly signals their element (blue for Hydro, green for
+        // Dendro, etc.) without overwhelming the art.
+        var colCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.3;
+        var colCY = H * 0.4;
+        var col = ctx.createRadialGradient(colCX, colCY, H * 0.03, colCX, colCY, H * 0.4);
+        col.addColorStop(0, eHex + "18");
+        col.addColorStop(0.5, eHex + "06");
         col.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = col;
         ctx.fillRect(SPLASH_LEFT, 0, W - SPLASH_LEFT, H);
 
-        // Light spill — a subtle vertical brightening at the seam
-        // between panels so the two halves feel lit by the same source.
-        var spill = ctx.createLinearGradient(SPLASH_LEFT - 15, 0, SPLASH_LEFT + 30, 0);
-        spill.addColorStop(0, "rgba(0,0,0,0)");
-        spill.addColorStop(0.3, "rgba(255,255,255,0.015)");
-        spill.addColorStop(0.7, "rgba(255,255,255,0.015)");
-        spill.addColorStop(1, "rgba(0,0,0,0)");
+        // Light spill — soft vertical glow bridging the two panels
+        // so the card reads as one continuous composition.
+        var spill = ctx.createLinearGradient(SPLASH_LEFT - 20, 0, SPLASH_LEFT + 35, 0);
+        spill.addColorStop(0, "rgba(255,255,255,0)");
+        spill.addColorStop(0.4, "rgba(255,255,255,0.05)");
+        spill.addColorStop(0.6, "rgba(255,255,255,0.05)");
+        spill.addColorStop(1, "rgba(255,255,255,0)");
         ctx.fillStyle = spill;
-        ctx.fillRect(SPLASH_LEFT - 15, 0, 45, H);
+        ctx.fillRect(SPLASH_LEFT - 20, 0, 55, H);
 
         // Environmental particles — element identity without a wash
         e.glow(ctx, SPLASH_LEFT * 0.5, H * 0.45, SPLASH_LEFT * 0.65, H * 0.55);
