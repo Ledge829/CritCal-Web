@@ -79,7 +79,8 @@
     <p class="eyebrow">UID Lookup</p>
     <h1>Search by UID</h1>
     <p class="subtitle">
-        Pull a player's showcased characters live from Enka.Network and get instant build ratings for each one.
+        Enter any Genshin Impact UID to pull their showcased characters live from Enka.Network
+        and get instant build ratings for each one.
     </p>
 </section>
 
@@ -89,6 +90,40 @@
         <button class="btn btn-primary" id="uid-search-btn">Search</button>
     </div>
     <div id="uid-history" class="uid-history-area"></div>
+</div>
+
+<div class="uid-info-grid fade-up fade-up-1">
+    <div class="uid-info-card">
+        <span class="uid-info-step">1</span>
+        <div>
+            <strong>Enter a UID</strong>
+            <span>Type any Genshin player's UID above. Make sure their character showcase is set to public in-game.</span>
+        </div>
+    </div>
+    <div class="uid-info-card">
+        <span class="uid-info-step">2</span>
+        <div>
+            <strong>We fetch the data</strong>
+            <span>CritCal pulls their showcased characters live from Enka.Network — weapons, artifacts, stats and all.</span>
+        </div>
+    </div>
+    <div class="uid-info-card">
+        <span class="uid-info-step">3</span>
+        <div>
+            <strong>Instant ratings</strong>
+            <span>Every character gets scored against CritCal's curated tier lists with full breakdowns.</span>
+        </div>
+    </div>
+</div>
+
+<div class="uid-tips fade-up fade-up-2">
+    <p class="eyebrow" style="margin-bottom:10px;">Tips</p>
+    <ul>
+        <li>The player must have their Character Showcase <strong>enabled</strong> in Genshin Impact's in-game settings.</li>
+        <li>UIDs are 6-9 digit numbers — you can find yours in-game on your profile page.</li>
+        <li>Characters not in the showcase won't appear. Players can showcase up to 8 characters at a time.</li>
+        <li>Your recent UID searches are saved locally — they never leave your device.</li>
+    </ul>
 </div>
 
 <div id="uid-result-area" class="uid-result-area fade-up fade-up-2" aria-live="polite"></div>
