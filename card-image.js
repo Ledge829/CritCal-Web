@@ -24,10 +24,13 @@
     var H = 540;
     var SCALE = 2;
 
-    var SPLASH_LEFT = 540;    // right panel starts here (54%)
-    var PAD_LEFT = 30;         // left panel content padding
-    var CONTENT_W = SPLASH_LEFT - PAD_LEFT * 2;  // ~480px
-    var ATMO_FADE = 120;       // width of the art fade-in gradient
+    // Balanced 50/50 layout with centered glass divider
+    var DIVIDER_LEFT = 460;     // divider starts here
+    var DIVIDER_RIGHT = 540;    // divider ends here (80px wide)
+    var SPLASH_LEFT = DIVIDER_RIGHT;  // artwork starts after divider
+    var PAD_LEFT = 32;          // left panel content padding (safe margin)
+    var CONTENT_W = DIVIDER_LEFT - PAD_LEFT * 2;  // 460 - 64 = 396px
+    var ATMO_FADE = 120;        // width of the art edge gradient fade
 
     // ==========================================================
     // ELEMENT ATMOSPHERE PROFILES
@@ -146,26 +149,49 @@
         ctx.textBaseline = "top";
 
         // ==========================================================
-        // 1. BACKGROUND — deep void base + element atmosphere
+        // 1. BACKGROUND — dark canvas + element spotlight + glass divider
         // ==========================================================
 
-        // Solid dark base
+        // Dark base for the entire card
         ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // Element atmosphere — a large radial glow centered near the
-        // join between the info panel and splash art, so the same
-        // lighting falls across both halves of the card.
-        var atmos = ctx.createRadialGradient(
-            SPLASH_LEFT - 80, H * 0.4, 20,
-            SPLASH_LEFT - 80, H * 0.4, H * 0.95
-        );
-        atmos.addColorStop(0, eHex + "30");
-        atmos.addColorStop(0.35, eHex + "15");
-        atmos.addColorStop(0.65, eDark + "AA");
-        atmos.addColorStop(1, "#080A0E");
-        ctx.fillStyle = atmos;
-        ctx.fillRect(0, 0, W, H);
+        // Left panel — clean dark surface for text readability
+        ctx.fillStyle = "#11141B";
+        ctx.fillRect(0, 0, DIVIDER_LEFT, H);
+
+        // Right panel — slightly lifted dark tone behind the artwork
+        ctx.fillStyle = "#161A24";
+        ctx.fillRect(DIVIDER_RIGHT, 0, W - DIVIDER_RIGHT, H);
+
+        // ── ONE large radial spotlight ──
+        // Centered slightly right of the divider so it naturally spreads
+        // behind both the divider and the character artwork. Single soft
+        // gradient, no rings, no hard edges, no geometric shapes.
+        var spotCX = DIVIDER_RIGHT + 30;
+        var spotCY = H * 0.42;
+        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.01, spotCX, spotCY, H * 0.85);
+        spot.addColorStop(0, eHex + "10");
+        spot.addColorStop(0.35, eHex + "06");
+        spot.addColorStop(0.65, eHex + "02");
+        spot.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = spot;
+        // Spread across the divider + artwork area only
+        ctx.fillRect(DIVIDER_LEFT, 0, W - DIVIDER_LEFT, H);
+
+        // ── Glass divider between panels ──
+        // A translucent vertical strip with a faint center highlight.
+        // 80px wide, centered between the left and right halves.
+        var divGrad = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
+        divGrad.addColorStop(0, "rgba(255,255,255,0)");
+        divGrad.addColorStop(0.2, "rgba(255,255,255,0.025)");
+        divGrad.addColorStop(0.45, "rgba(255,255,255,0.05)");
+        divGrad.addColorStop(0.50, "rgba(255,255,255,0.07)");  // faint centre highlight
+        divGrad.addColorStop(0.55, "rgba(255,255,255,0.05)");
+        divGrad.addColorStop(0.8, "rgba(255,255,255,0.025)");
+        divGrad.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = divGrad;
+        ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_RIGHT - DIVIDER_LEFT, H);
 
         // ==========================================================
         // 2. SPLASH ART (right side) — with gradient blend into bg
