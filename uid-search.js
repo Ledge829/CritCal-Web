@@ -296,23 +296,46 @@
             });
         }
 
-        // Share button — copies a link to this UID search.
+        // Share button — generates the card image and shares it via the system share sheet.
         var shareBtn = overlay.querySelector(".uid-share-overlay-btn");
         if (shareBtn) {
-            shareBtn.addEventListener("click", function (e) {
+            shareBtn.addEventListener("click", async function (e) {
                 e.stopPropagation();
-                var url = window.location.origin + window.location.pathname + "?uid=" + encodeURIComponent(_currentUid || "");
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(url).then(function () {
-                        shareBtn.textContent = "Copied!";
-                        setTimeout(function () {
-                            shareBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share Build';
-                        }, 2000);
-                    }).catch(function () {
-                        prompt("Copy this link:", url);
-                    });
-                } else {
-                    prompt("Copy this link:", url);
+                shareBtn.disabled = true;
+                shareBtn.textContent = "Preparing...";
+                try {
+                    var charInfo = {
+                        name: c.character,
+                        element: c.element,
+                        rarity: c.rarity,
+                        portrait: c.portrait,
+                        splash: c.splash,
+                        key: c.character ? c.character.toLowerCase().replace(/\s+/g, "") : "",
+                    };
+                    var blob = await window.generateRatingCard(c, charInfo);
+                    var file = new File([blob], (c.character || "build") + "-rating.png", { type: "image/png" });
+                    if (navigator.share && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: c.character + " — CritCal Rating",
+                            text: "Check out this " + c.character + " build rated " + (c.grade || "?") + " (" + (c.overall_score || "?") + ")",
+                            files: [file],
+                        });
+                    } else {
+                        // Fallback: download
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement("a");
+                        a.href = url;
+                        a.download = (c.character || "build") + "-rating.png";
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }
+                } catch (err) {
+                    console.error("Share failed:", err);
+                } finally {
+                    setTimeout(function () {
+                        shareBtn.disabled = false;
+                        shareBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share Build';
+                    }, 1500);
                 }
             });
         }

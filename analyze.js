@@ -297,33 +297,46 @@ function wireButtons() {
         });
     }
 
-    // Share button — copies a shareable URL with the build params
+    // Share button — generates the card image then shares it via the system share sheet
     const shareBtn = document.getElementById("share-link-btn");
     if (shareBtn) {
-        shareBtn.addEventListener("click", function () {
+        shareBtn.addEventListener("click", async function () {
             if (!_lastResult) return;
-            const params = new URLSearchParams();
-            params.set("character", _lastResult.character || "");
-            params.set("crit_rate", _lastResult.crit_rate != null ? _lastResult.crit_rate : "");
-            params.set("crit_dmg", _lastResult.crit_dmg != null ? _lastResult.crit_dmg : "");
-            params.set("atk", _lastResult.stats_used ? _lastResult.stats_used.atk || "" : "");
-            if (_lastResult.stats_used) {
-                if (_lastResult.stats_used.hp) params.set("hp", _lastResult.stats_used.hp);
-                if (_lastResult.stats_used.def) params.set("def", _lastResult.stats_used.def);
-                if (_lastResult.stats_used.elemental_mastery) params.set("em", _lastResult.stats_used.elemental_mastery);
-                if (_lastResult.stats_used.energy_recharge) params.set("er", _lastResult.stats_used.energy_recharge);
-            }
-            if (_lastResult.weapon_name) params.set("weapon", _lastResult.weapon_name + (_lastResult.weapon_refinement ? " r" + _lastResult.weapon_refinement : ""));
-            if (_lastResult.primary_artifact_set_name) params.set("artifacts", _lastResult.primary_artifact_set_count + "pc " + _lastResult.primary_artifact_set_name);
-
-            const url = window.location.origin + "/analyze.html?" + params.toString();
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(function () {
-                    shareBtn.textContent = "Copied!";
-                    setTimeout(function () { shareBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share`; }, 2000);
-                }).catch(function () { prompt("Copy this link:", url); });
-            } else {
-                prompt("Copy this link:", url);
+            shareBtn.disabled = true;
+            shareBtn.textContent = "Preparing...";
+            try {
+                const blob = await window.generateRatingCard(_lastResult, _lastCharInfo || {});
+                const file = new File([blob], (_lastResult.character || "build") + "-rating.png", { type: "image/png" });
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        title: _lastResult.character + " — CritCal Rating",
+                        text: "Check out this " + _lastResult.character + " build rated " + (_lastResult.grade || "?") + " (" + (_lastResult.overall_score || "?") + ")" + (_lastResult.build_title ? " — " + _lastResult.build_title : ""),
+                        files: [file],
+                    });
+                } else {
+                    // Fallback: download the image
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = (_lastResult.character || "build") + "-rating.png";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }
+            } catch (err) {
+                console.error("Share failed:", err);
+                // Last resort: copy URL
+                try {
+                    const url = window.location.origin + "/analyze.html?character=" + encodeURIComponent(_lastResult.character || "");
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(url);
+                        shareBtn.textContent = "Link copied!";
+                    }
+                } catch (_) {}
+            } finally {
+                setTimeout(function () {
+                    shareBtn.disabled = false;
+                    shareBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share Build`;
+                }, 1500);
             }
         });
     }
