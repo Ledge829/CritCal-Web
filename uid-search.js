@@ -304,6 +304,7 @@
                     var charInfo = {
                         name: c.character,
                         element: c.element,
+                        rarity: c.rarity,
                         portrait: c.portrait,
                         splash: c.splash,
                         key: c.character ? c.character.toLowerCase().replace(/\s+/g, "") : "",

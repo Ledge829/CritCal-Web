@@ -135,7 +135,6 @@
         }
 
         var charName = result.character || "Unknown";
-        var buildTitle = result.build_title || "";
         var grade = result.grade || "?";
         var score = result.overall_score != null ? result.overall_score : "--";
         var cv = result.crit_value != null ? result.crit_value : "--";
@@ -182,15 +181,18 @@
             });
 
             if (img) {
-                // Cover: fill the right panel (470 x 540) while
-                // maintaining aspect ratio, centering the character.
+                // Cover: fill the right panel while maintaining aspect
+                // ratio. Gacha splash art has the character's face in
+                // the upper portion, so bias the vertical crop upward
+                // (15% above, 85% below) instead of centering it — a
+                // centered crop would cut the face off for most characters.
                 var pw = W - SPLASH_LEFT;   // 460
                 var ph = H;                 // 540
                 var imgScale = Math.max(pw / img.naturalWidth, ph / img.naturalHeight);
                 var sw = pw / imgScale;
                 var sh = ph / imgScale;
                 var sx = (img.naturalWidth - sw) / 2;
-                var sy = (img.naturalHeight - sh) / 2;
+                var sy = Math.max(0, (img.naturalHeight - sh) * 0.15);
 
                 ctx.save();
                 ctx.beginPath();
@@ -229,26 +231,18 @@
         ctx.font = "600 20px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText(String(score), PAD_LEFT + 60, y + 8);
 
-        ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.font = "400 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.font = "500 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText("OVERALL SCORE", PAD_LEFT + 60, y + 32);
 
         // ---- 3b. CHARACTER NAME ----
         y = 90;
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = "600 24px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "700 26px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText(charName, PAD_LEFT, y);
 
-        // ---- 3c. BUILD TITLE ----
-        if (buildTitle) {
-            y = 118;
-            ctx.fillStyle = "rgba(255,255,255,0.5)";
-            ctx.font = "400 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(buildTitle, PAD_LEFT, y);
-        }
-
-        // ---- 3d. ELEMENT BADGE + RARITY STARS ----
-        y = buildTitle ? 142 : 128;
+        // ---- 3c. ELEMENT BADGE + RARITY STARS ----
+        y = 126;
         var elemLabel = capitalize(info.element || "");
 
         if (elemLabel) {
@@ -274,10 +268,10 @@
             ctx.fillText(starStr, PAD_LEFT + (elemLabel ? badgeW + 10 : 0), y + 4);
         }
 
-        // ---- 3e. ACCENT RULE ----
-        var ruleY = (buildTitle ? 142 : 128) + 34;
+        // ---- 3d. ACCENT RULE ----
+        var ruleY = y + 34;
         ctx.save();
-        ctx.strokeStyle = eHex + "30";
+        ctx.strokeStyle = eHex + "35";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(PAD_LEFT, ruleY);
@@ -285,33 +279,33 @@
         ctx.stroke();
         ctx.restore();
 
-        // ---- 3f. CRIT RATIO ----
-        var cy = ruleY + 16;
+        // ---- 3e. CRIT RATIO ----
+        var cy = ruleY + 18;
 
         // Label
-        ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textBaseline = "top";
         ctx.fillText("CRIT RATIO", PAD_LEFT, cy);
 
         // CR / CD values
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = "600 16px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "700 17px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         var critLine = cr + "% / " + cd + "%";
-        ctx.fillText(critLine, PAD_LEFT, cy + 14);
+        ctx.fillText(critLine, PAD_LEFT, cy + 15);
 
         // CV — right-aligned
         ctx.textAlign = "right";
-        ctx.fillStyle = "rgba(255,255,255,0.4)";
-        ctx.font = "400 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("CV " + cv, PAD_LEFT + CONTENT_W, cy + 16);
+        ctx.fillStyle = "rgba(255,255,255,0.55)";
+        ctx.font = "500 14px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText("CV " + cv, PAD_LEFT + CONTENT_W, cy + 17);
         ctx.textAlign = "left";
 
-        // ---- 3g. STATS ----
-        var sy = cy + 50;
+        // ---- 3f. STATS ----
+        var sy = cy + 52;
 
-        ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText("STATS", PAD_LEFT, sy);
 
         // Build a clean array of non-zero stats
@@ -342,8 +336,8 @@
             var ey = statTop + row * 22;
 
             // Label
-            ctx.fillStyle = "rgba(255,255,255,0.5)";
-            ctx.font = "400 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillStyle = "rgba(255,255,255,0.6)";
+            ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.textBaseline = "top";
             ctx.fillText(entries[j].label, ex, ey);
 
@@ -357,8 +351,8 @@
         var statRows = Math.ceil(entries.length / 2);
         var eqTop = statTop + statRows * 22 + 14;
 
-        ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText("EQUIPMENT", PAD_LEFT, eqTop);
 
         var eqY = eqTop + 16;
@@ -367,8 +361,8 @@
 
         if (hasWeapon) {
             var wr = result.weapon_refinement ? "  R" + result.weapon_refinement : "";
-            ctx.fillStyle = "rgba(255,255,255,0.65)";
-            ctx.font = "400 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.fillText(result.weapon_name + wr, PAD_LEFT, eqY);
             if (result.weapon_tier) {
                 drawTierBadge(ctx, result.weapon_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
@@ -381,18 +375,18 @@
             if (result.primary_artifact_set_count) {
                 setLabel += "  " + result.primary_artifact_set_count + "pc";
             }
-            ctx.fillStyle = "rgba(255,255,255,0.65)";
-            ctx.font = "400 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.fillText(setLabel, PAD_LEFT, eqY);
             if (result.artifact_tier) {
                 drawTierBadge(ctx, result.artifact_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
             }
         }
 
-        // ---- 3i. FOOTER ----
+        // ---- 3g. FOOTER ----
         ctx.textAlign = "center";
-        ctx.fillStyle = "rgba(255,255,255,0.12)";
-        ctx.font = "400 9px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textBaseline = "bottom";
         ctx.fillText("CritCal  ·  Open Source  ·  Built by the community", W / 2, H - 18);
 
