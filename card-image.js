@@ -230,27 +230,48 @@
         ctx.textBaseline = "top";
 
         // ==========================================================
-        // 1. BACKGROUND — cinematic spotlight behind all content.
-        // No dark overlays — everything is a soft coloured glow so
-        // text, stats, and artwork stay 100% opaque and sharp.
+        // 1. BACKGROUND — lighting, not colour. The splash art is
+        // the only source of character identity; the background
+        // just makes it pop. No coloured washes, no visible rings.
         // ==========================================================
 
         ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // Localised glow behind the splash art only — never touches
-        // the left info panel. The character's element colour lives
-        // in the art itself, not as a full-canvas wash.
-        var glowCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.3;
-        var glowCY = H * 0.45;
-        var glow = ctx.createRadialGradient(glowCX, glowCY, H * 0.02, glowCX, glowCY, H * 0.45);
-        glow.addColorStop(0, eHex + "20");
-        glow.addColorStop(0.5, eHex + "06");
-        glow.addColorStop(1, "#080A0E");
-        ctx.fillStyle = glow;
+        // Soft bright highlight behind the splash art — a pale glow
+        // that makes the character stand out against the dark bg.
+        // Uses white at very low opacity; pure brighten, not colorize.
+        var hlCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.3;
+        var hlCY = H * 0.38;
+        var hl = ctx.createRadialGradient(hlCX, hlCY, H * 0.01, hlCX, hlCY, H * 0.45);
+        hl.addColorStop(0, "rgba(255,255,255,0.04)");
+        hl.addColorStop(0.55, "rgba(255,255,255,0.01)");
+        hl.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = hl;
         ctx.fillRect(SPLASH_LEFT, 0, W - SPLASH_LEFT, H);
 
-        // Element-themed environmental particles — subtle identity
+        // Whisper of element colour behind the character — barely
+        // there, just enough that a Hydro character feels slightly
+        // blue-tinted behind them vs a Pyro character. 2% opacity.
+        var colCX = SPLASH_LEFT + (W - SPLASH_LEFT) * 0.35;
+        var colCY = H * 0.42;
+        var col = ctx.createRadialGradient(colCX, colCY, H * 0.02, colCX, colCY, H * 0.3);
+        col.addColorStop(0, eHex + "06");
+        col.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = col;
+        ctx.fillRect(SPLASH_LEFT, 0, W - SPLASH_LEFT, H);
+
+        // Light spill — a subtle vertical brightening at the seam
+        // between panels so the two halves feel lit by the same source.
+        var spill = ctx.createLinearGradient(SPLASH_LEFT - 15, 0, SPLASH_LEFT + 30, 0);
+        spill.addColorStop(0, "rgba(0,0,0,0)");
+        spill.addColorStop(0.3, "rgba(255,255,255,0.015)");
+        spill.addColorStop(0.7, "rgba(255,255,255,0.015)");
+        spill.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = spill;
+        ctx.fillRect(SPLASH_LEFT - 15, 0, 45, H);
+
+        // Environmental particles — element identity without a wash
         e.glow(ctx, SPLASH_LEFT * 0.5, H * 0.45, SPLASH_LEFT * 0.65, H * 0.55);
 
         // ==========================================================
