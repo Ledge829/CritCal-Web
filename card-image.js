@@ -235,7 +235,7 @@
         // just makes it pop. No coloured washes, no visible rings.
         // ==========================================================
 
-        ctx.fillStyle = "#11141B";
+        ctx.fillStyle = "#1B202C";
         ctx.fillRect(0, 0, W, H);
 
         // Bright highlight behind the splash art — makes the character
@@ -403,7 +403,7 @@
         }
 
         // "OVERALL SCORE" label — below both
-        ctx.fillStyle = "rgba(255,255,255,0.28)";
+        ctx.fillStyle = "rgba(255,255,255,0.42)";
         ctx.font = "500 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText("OVERALL SCORE", x, scoreY + 56);
 
@@ -421,7 +421,7 @@
         // ---- 3e. CRIT RATIO — with CV inline ----
         var cy = ruleY + 22;
 
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillStyle = "rgba(255,255,255,0.50)";
         ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText("CRIT RATIO", x, cy);
 
@@ -432,7 +432,7 @@
         ctx.fillText(critLine, x, cy + 16);
 
         // CV inline after a thin separator
-        ctx.fillStyle = "rgba(255,255,255,0.32)";
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
         ctx.font = "500 14px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         var cvLabel = " ·  CV " + cv;
         ctx.fillText(cvLabel, x + critW + 8, cy + 18);
@@ -440,7 +440,7 @@
         // ---- 3f. STATS — 2-column, perfectly aligned ----
         var sy = cy + 62;
 
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillStyle = "rgba(255,255,255,0.50)";
         ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText("STATS", x, sy);
 
@@ -468,7 +468,7 @@
             var ex = x + (col === 0 ? 0 : colW);
             var ey = statTop + row * 24;
 
-            ctx.fillStyle = "rgba(255,255,255,0.60)";
+            ctx.fillStyle = "rgba(255,255,255,0.72)";
             ctx.font = "500 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.fillText(entries[j].label, ex, ey);
 
@@ -476,7 +476,6 @@
             ctx.font = "600 14px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.fillText(entries[j].value, ex + labelW, ey);
         }
-        ctx.shadowBlur = 0;
 
         // ---- 3g. EQUIPMENT — premium inline badges ----
         var hasWeapon = result.weapon_name;
@@ -486,7 +485,7 @@
             var statRows = Math.ceil(entries.length / 2);
             var eqTop = statTop + Math.max(statRows, 3) * 24 + 12;
 
-            ctx.fillStyle = "rgba(255,255,255,0.35)";
+            ctx.fillStyle = "rgba(255,255,255,0.50)";
             ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.fillText("EQUIPMENT", x, eqTop);
 
@@ -502,7 +501,7 @@
                 var weaponDisplay = truncate(ctx, rawW, maxTextW);
                 var wW = ctx.measureText(weaponDisplay).width;
 
-                ctx.fillStyle = "rgba(255,255,255,0.80)";
+                ctx.fillStyle = "rgba(255,255,255,0.92)";
                 ctx.fillText(weaponDisplay, x, eqY);
 
                 if (result.weapon_tier) {
@@ -520,7 +519,7 @@
                 var setDisplay = truncate(ctx, setLabel, maxTextW);
                 var sW = ctx.measureText(setDisplay).width;
 
-                ctx.fillStyle = "rgba(255,255,255,0.80)";
+                ctx.fillStyle = "rgba(255,255,255,0.92)";
                 ctx.fillText(setDisplay, x, eqY);
 
                 if (result.artifact_tier) {
@@ -531,7 +530,7 @@
 
         // ---- 3h. FOOTER ----
         ctx.textAlign = "right";
-        ctx.fillStyle = "rgba(255,255,255,0.10)";
+        ctx.fillStyle = "rgba(255,255,255,0.18)";
         ctx.font = "400 8.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textBaseline = "bottom";
         ctx.fillText("CritCal", W - 18, H - 16);
