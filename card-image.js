@@ -164,20 +164,32 @@
         ctx.fillStyle = "#161A24";
         ctx.fillRect(DIVIDER_RIGHT, 0, W - DIVIDER_RIGHT, H);
 
-        // ── Element-lit centre beam ──
-        // The divider IS the spotlight. A concentrated vertical glow
-        // at the centre of the card with the character's element colour.
-        // Light radiates from the divider outward but stays focused there.
-        var beam = ctx.createLinearGradient(DIVIDER_LEFT - 20, 0, DIVIDER_RIGHT + 20, 0);
-        beam.addColorStop(0, "rgba(0,0,0,0)");
-        beam.addColorStop(0.30, eHex + "04");
-        beam.addColorStop(0.45, eHex + "22");
-        beam.addColorStop(0.50, eHex + "2A");
-        beam.addColorStop(0.55, eHex + "22");
-        beam.addColorStop(0.70, eHex + "04");
-        beam.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = beam;
-        ctx.fillRect(DIVIDER_LEFT - 20, 0, 80, H);
+        // ── ONE very large, extremely soft radial spotlight ──
+        // Centered slightly right of the divider. Large inner radius
+        // eliminates any visible centre spot; very low opacity keeps
+        // it as ambient atmosphere rather than a visible light source.
+        var spotCX = DIVIDER_RIGHT + 25;
+        var spotCY = H * 0.40;
+        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.15, spotCX, spotCY, H * 0.92);
+        spot.addColorStop(0, eHex + "08");
+        spot.addColorStop(0.5, eHex + "03");
+        spot.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = spot;
+        ctx.fillRect(DIVIDER_LEFT, 0, W - DIVIDER_LEFT, H);
+
+        // ── Glass divider between panels ──
+        // A translucent vertical strip with a faint center highlight.
+        // 80px wide, centered between the left and right halves.
+        var divGrad = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
+        divGrad.addColorStop(0, "rgba(255,255,255,0)");
+        divGrad.addColorStop(0.2, "rgba(255,255,255,0.025)");
+        divGrad.addColorStop(0.45, "rgba(255,255,255,0.05)");
+        divGrad.addColorStop(0.50, "rgba(255,255,255,0.07)");  // faint centre highlight
+        divGrad.addColorStop(0.55, "rgba(255,255,255,0.05)");
+        divGrad.addColorStop(0.8, "rgba(255,255,255,0.025)");
+        divGrad.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = divGrad;
+        ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_RIGHT - DIVIDER_LEFT, H);
 
         // ==========================================================
         // 2. SPLASH ART (right side) — with gradient blend into bg
