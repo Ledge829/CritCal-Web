@@ -152,31 +152,65 @@
         // 1. BACKGROUND — dark canvas + element spotlight + glass divider
         // ==========================================================
 
-        ctx.fillStyle = "#0A0D14";
+        // Dark base for the entire card
+        ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // ── Spotlight ──
-        // A single soft radial gradient behind the divider and artwork.
-        // Large enough to have no visible edge, bright enough to be seen.
-        var spotCX = DIVIDER_RIGHT + 15;
-        var spotCY = H * 0.38;
-        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.12, spotCX + 30, spotCY + 5, H * 0.82);
-        spot.addColorStop(0, eHex + "14");
-        spot.addColorStop(0.35, eHex + "08");
-        spot.addColorStop(0.6, eHex + "03");
+        // Left panel — clean dark surface for text readability
+        ctx.fillStyle = "#11141B";
+        ctx.fillRect(0, 0, DIVIDER_LEFT, H);
+
+        // Right panel — slightly lifted dark tone behind the artwork
+        ctx.fillStyle = "#161A24";
+        ctx.fillRect(DIVIDER_RIGHT, 0, W - DIVIDER_RIGHT, H);
+
+        // ── ONE very large, extremely soft radial spotlight ──
+        // Centered slightly right of the divider so it naturally
+        // illuminates the artwork without becoming a visible object.
+        var spotCX = DIVIDER_RIGHT + 20;
+        var spotCY = H * 0.40;
+        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.12, spotCX + 40, spotCY + 5, H * 0.88);
+        spot.addColorStop(0, eHex + "0E");
+        spot.addColorStop(0.4, eHex + "05");
+        spot.addColorStop(0.7, eHex + "02");
         spot.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = spot;
-        ctx.fillRect(DIVIDER_LEFT - 40, 0, W - DIVIDER_LEFT + 40, H);
+        ctx.fillRect(DIVIDER_LEFT, 0, W - DIVIDER_LEFT, H);
 
-        // ── Glass divider ──
-        // Translucent frosted strip with a faint vertical highlight.
+        // ── Element-coloured divider glow ──
+        // The divider picks up the character's element colour so the
+        // strip between panels feels connected to the character.
+        var divGlow = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
+        divGlow.addColorStop(0, "rgba(0,0,0,0)");
+        divGlow.addColorStop(0.40, eHex + "06");
+        divGlow.addColorStop(0.50, eHex + "0A");
+        divGlow.addColorStop(0.60, eHex + "06");
+        divGlow.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = divGlow;
+        ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_RIGHT - DIVIDER_LEFT, H);
+
+        // ── Element motes ──
+        // Tiny floating particles near the divider that echo the
+        // character's element — subtle enough to feel like atmosphere.
+        var seed = (charName.charCodeAt(0) || 1) + (charName.charCodeAt(1) || 3);
+        for (var m = 0; m < 14; m++) {
+            var mx = DIVIDER_LEFT + 10 + ((m * 37 + seed * 7) % 80);
+            var my = 20 + ((m * 53 + seed * 11) % 500);
+            var mr = 1 + (m % 3);
+            ctx.globalAlpha = 0.03 + (m % 5) * 0.008;
+            ctx.fillStyle = eHex;
+            ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // ── Glass divider highlight ──
         var divGrad = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
         divGrad.addColorStop(0, "rgba(255,255,255,0)");
-        divGrad.addColorStop(0.2, "rgba(255,255,255,0.025)");
-        divGrad.addColorStop(0.45, "rgba(255,255,255,0.05)");
-        divGrad.addColorStop(0.50, "rgba(255,255,255,0.08)");
-        divGrad.addColorStop(0.55, "rgba(255,255,255,0.05)");
-        divGrad.addColorStop(0.8, "rgba(255,255,255,0.025)");
+        divGrad.addColorStop(0.2, "rgba(255,255,255,0.02)");
+        divGrad.addColorStop(0.45, "rgba(255,255,255,0.04)");
+        divGrad.addColorStop(0.50, "rgba(255,255,255,0.06)");
+        divGrad.addColorStop(0.55, "rgba(255,255,255,0.04)");
+        divGrad.addColorStop(0.8, "rgba(255,255,255,0.02)");
         divGrad.addColorStop(1, "rgba(255,255,255,0)");
         ctx.fillStyle = divGrad;
         ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_RIGHT - DIVIDER_LEFT, H);
