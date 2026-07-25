@@ -1,20 +1,23 @@
 /*
  * Build rating card for CritCal -- landscape showcase layout.
  *
- * LAYOUT:
- *   LEFT  (~55%) — structured build information
- *   RIGHT (~45%) — character gacha splash art, emerging from
- *                  an element-colored atmosphere via a gradient fade
+ * LAYOUT (permanent design reference):
+ *   LEFT  (~46%) — structured build information, near-pure-black bg
+ *   DIVIDER (~8%) — thin translucent glass strip with a soft vertical
+ *                   highlight, sitting inside the ambient glow
+ *   RIGHT (~46%) — full-height character splash art
  *
- * The splash art is the visual anchor; the data reads cleanly
- * on the left with strong typographic hierarchy. Nothing overlaps.
+ * Exactly one soft, feathered, cinematic spotlight lives behind the
+ * divider/artwork. It has no visible edge, ring, or geometric shape —
+ * it's blurred and low-opacity, tinted with the element color at low
+ * saturation, and used only as ambient light. The left info panel
+ * stays almost pure black for maximum legibility.
+ *
+ * All text is measured before it's drawn and shrunk or truncated if
+ * it would run past its safe area — nothing is allowed to clip or
+ * leave the canvas.
  *
  * Canvas: 1000 × 540 at 1x (drawn at 2x for retina).
- *
- * Inspired by the Akasha.cv philosophy of art-as-composition:
- * the character portrait drives the card's atmosphere, and the
- * data is cleanly layered alongside it — not floating, not beside
- * it as a separate panel, but sharing the same element-toned canvas.
  */
 
 (function () {
@@ -24,17 +27,20 @@
     var H = 540;
     var SCALE = 2;
 
-    var SPLASH_LEFT = 540;    // right panel starts here (54%)
-    var PAD_LEFT = 30;         // left panel content padding
-    var CONTENT_W = SPLASH_LEFT - PAD_LEFT * 2;  // ~480px
-    var ATMO_FADE = 210;       // width of the art fade-in gradient
+    var SAFE = 32;             // minimum margin from any canvas edge
+
+    var DIVIDER_W = 84;                          // glass divider width (70-100px)
+    var DIVIDER_CENTER = W / 2;                  // perfectly balanced 50/50 split
+    var DIVIDER_LEFT = DIVIDER_CENTER - DIVIDER_W / 2;   // 458
+    var DIVIDER_RIGHT = DIVIDER_CENTER + DIVIDER_W / 2;  // 542
+
+    var PAD_LEFT = SAFE;                          // left panel content padding
+    var CONTENT_W = DIVIDER_LEFT - PAD_LEFT * 2;  // ~394px, safe on both sides
+
+    var FONT = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
 
     // ==========================================================
     // ELEMENT ATMOSPHERE PROFILES
-    //
-    // Each element gets a distinct visual mood. The `hex` is the
-    // bright accent color; `dark` is the deep atmospheric tone
-    // used as the card's base background.
     // ==========================================================
 
     var EL = {
@@ -83,6 +89,53 @@
         ctx.closePath();
     }
 
+    function hexToRgb(hex) {
+        var v = hex.replace("#", "");
+        return {
+            r: parseInt(v.substr(0, 2), 16),
+            g: parseInt(v.substr(2, 2), 16),
+            b: parseInt(v.substr(4, 2), 16),
+        };
+    }
+
+    function desaturateRgb(rgb, amount) {
+        var gray = (rgb.r + rgb.g + rgb.b) / 3;
+        return {
+            r: Math.round(rgb.r + (gray - rgb.r) * amount),
+            g: Math.round(rgb.g + (gray - rgb.g) * amount),
+            b: Math.round(rgb.b + (gray - rgb.b) * amount),
+        };
+    }
+
+    function rgba(rgb, a) {
+        return "rgba(" + rgb.r + "," + rgb.g + "," + rgb.b + "," + a + ")";
+    }
+
+    // Shrinks font-size (in 1px steps) until `text` fits `maxWidth`.
+    // Returns the resolved pixel size; caller must re-set ctx.font
+    // with it before measuring/drawing again.
+    function fitFontSize(ctx, text, maxWidth, weight, baseSize, minSize) {
+        var size = baseSize;
+        while (size > minSize) {
+            ctx.font = weight + " " + size + "px " + FONT;
+            if (ctx.measureText(text).width <= maxWidth) break;
+            size -= 1;
+        }
+        ctx.font = weight + " " + size + "px " + FONT;
+        return size;
+    }
+
+    // Truncates `text` with an ellipsis so it fits `maxWidth` at the
+    // ctx's current font. Assumes ctx.font is already set.
+    function truncateToWidth(ctx, text, maxWidth) {
+        if (ctx.measureText(text).width <= maxWidth) return text;
+        var t = text;
+        while (t.length > 1 && ctx.measureText(t + "…").width > maxWidth) {
+            t = t.slice(0, -1);
+        }
+        return t + "…";
+    }
+
     function drawTierBadge(ctx, label, x, y) {
         if (!label) return;
         var key = (label + "").toLowerCase();
@@ -104,11 +157,12 @@
         ctx.fillStyle = t.bg;
         ctx.fill();
         ctx.fillStyle = t.fg;
-        ctx.font = "700 8.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "700 8.5px " + FONT;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(label, x + w / 2, y + h / 2 + 1);
         ctx.restore();
+        return w;
     }
 
     // ==========================================================
@@ -146,31 +200,46 @@
         ctx.textBaseline = "top";
 
         // ==========================================================
-        // 1. BACKGROUND — deep void base + element atmosphere
+        // 1. BACKGROUND — near-pure-black base
         // ==========================================================
 
-        // Solid dark base
-        ctx.fillStyle = "#080A0E";
-        ctx.fillRect(0, 0, W, H);
-
-        // Element atmosphere — the glow's hot core sits on the splash
-        // art side (like a spotlight on the character), and fades out
-        // gradually as it reaches the text panel, which stays dark and
-        // high-contrast for legibility.
-        var atmos = ctx.createRadialGradient(
-            SPLASH_LEFT + 60, H * 0.38, 10,
-            SPLASH_LEFT + 60, H * 0.38, W * 0.68
-        );
-        atmos.addColorStop(0,    eHex + "45");
-        atmos.addColorStop(0.18, eHex + "26");
-        atmos.addColorStop(0.36, eDark + "CC");
-        atmos.addColorStop(0.6,  "#080A0E");
-        atmos.addColorStop(1,    "#080A0E");
-        ctx.fillStyle = atmos;
+        ctx.fillStyle = "#030405";
         ctx.fillRect(0, 0, W, H);
 
         // ==========================================================
-        // 2. SPLASH ART (right side) — with gradient blend into bg
+        // 2. THE SPOTLIGHT — one enormous, feathered, blurred radial
+        // glow. Its core sits just past the divider (on the artwork
+        // side) and its huge soft radius lets it dissolve naturally
+        // into the background with no visible edge. A heavy canvas
+        // blur is layered on top of the gradient's own soft stops so
+        // there is never a visible ring or halo. Tint is the element
+        // color, desaturated and kept at low opacity throughout —
+        // it reads as ambient light, not an object.
+        // ==========================================================
+
+        var spotRgb = desaturateRgb(hexToRgb(eHex), 0.45);
+        var darkRgb = hexToRgb(eDark);
+
+        var spotX = DIVIDER_RIGHT + (W - DIVIDER_RIGHT) * 0.32;
+        var spotY = H * 0.42;
+        var spotR = W * 0.92;
+
+        ctx.save();
+        ctx.filter = "blur(55px)";
+        var spot = ctx.createRadialGradient(spotX, spotY, 0, spotX, spotY, spotR);
+        spot.addColorStop(0,    rgba(spotRgb, 0.22));
+        spot.addColorStop(0.22, rgba(spotRgb, 0.13));
+        spot.addColorStop(0.45, rgba(darkRgb, 0.5));
+        spot.addColorStop(0.72, "rgba(3,4,5,0.35)");
+        spot.addColorStop(1,    "rgba(3,4,5,0)");
+        ctx.fillStyle = spot;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+
+        // ==========================================================
+        // 3. SPLASH ART (right side) — full-height, blends into the
+        // glow at its left edge so the character emerges from the
+        // atmosphere rather than sitting in a hard box.
         // ==========================================================
 
         if (splashUrl) {
@@ -183,13 +252,8 @@
             });
 
             if (img) {
-                // Cover: fill the right panel while maintaining aspect
-                // ratio. Gacha splash art has the character's face in
-                // the upper portion, so bias the vertical crop upward
-                // (15% above, 85% below) instead of centering it — a
-                // centered crop would cut the face off for most characters.
-                var pw = W - SPLASH_LEFT;   // 460
-                var ph = H;                 // 540
+                var pw = W - DIVIDER_RIGHT;
+                var ph = H;
                 var imgScale = Math.max(pw / img.naturalWidth, ph / img.naturalHeight);
                 var sw = pw / imgScale;
                 var sh = ph / imgScale;
@@ -198,75 +262,113 @@
 
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(SPLASH_LEFT, 0, pw, ph);
+                ctx.rect(DIVIDER_RIGHT, 0, pw, ph);
                 ctx.clip();
-                ctx.drawImage(img, sx, sy, sw, sh, SPLASH_LEFT, 0, pw, ph);
-                ctx.restore();
+                ctx.drawImage(img, sx, sy, sw, sh, DIVIDER_RIGHT, 0, pw, ph);
 
-                // Gradient mask — left edge of the art fades into the
-                // dark background so the character "emerges" from the
-                // atmosphere rather than sitting in a box. Wider, with
-                // more stops, for a softer, more gradual blend.
-                var fadeGrad = ctx.createLinearGradient(SPLASH_LEFT, 0, SPLASH_LEFT + ATMO_FADE, 0);
-                fadeGrad.addColorStop(0,    "rgba(8,10,14,1)");
-                fadeGrad.addColorStop(0.25, "rgba(8,10,14,0.75)");
-                fadeGrad.addColorStop(0.5,  "rgba(8,10,14,0.42)");
-                fadeGrad.addColorStop(0.75, "rgba(8,10,14,0.16)");
-                fadeGrad.addColorStop(1,    "rgba(8,10,14,0)");
+                // Subtle ambient rim-light across hair/shoulders near the
+                // divider, using a screen blend so it brightens without
+                // flattening contrast or washing out detail.
+                ctx.globalCompositeOperation = "screen";
+                var rim = ctx.createRadialGradient(
+                    DIVIDER_RIGHT + 30, H * 0.34, 10,
+                    DIVIDER_RIGHT + 30, H * 0.34, 260
+                );
+                rim.addColorStop(0, rgba(spotRgb, 0.16));
+                rim.addColorStop(1, rgba(spotRgb, 0));
+                ctx.fillStyle = rim;
+                ctx.fillRect(DIVIDER_RIGHT, 0, pw, ph);
+                ctx.globalCompositeOperation = "source-over";
+
+                // Left-edge fade — art dissolves into the atmosphere
+                // rather than ending in a hard vertical line.
+                var fadeGrad = ctx.createLinearGradient(DIVIDER_RIGHT, 0, DIVIDER_RIGHT + 200, 0);
+                fadeGrad.addColorStop(0,    "rgba(3,4,5,0.9)");
+                fadeGrad.addColorStop(0.3,  "rgba(3,4,5,0.55)");
+                fadeGrad.addColorStop(0.6,  "rgba(3,4,5,0.22)");
+                fadeGrad.addColorStop(1,    "rgba(3,4,5,0)");
                 ctx.fillStyle = fadeGrad;
-                ctx.fillRect(SPLASH_LEFT, 0, ATMO_FADE, ph);
+                ctx.fillRect(DIVIDER_RIGHT, 0, 200, ph);
+
+                ctx.restore();
             }
         }
 
         // ==========================================================
-        // 3. LEFT PANEL — build information
+        // 4. GLASS DIVIDER — thin translucent strip between the panels,
+        // softly lit by the glow behind it, with a faint vertical
+        // highlight to read as glass rather than a flat bar.
+        // ==========================================================
+
+        ctx.save();
+        var glass = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
+        glass.addColorStop(0,   "rgba(255,255,255,0)");
+        glass.addColorStop(0.5, "rgba(255,255,255,0.05)");
+        glass.addColorStop(1,   "rgba(255,255,255,0)");
+        ctx.fillStyle = glass;
+        ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_W, H);
+
+        ctx.filter = "blur(3px)";
+        var hl = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
+        hl.addColorStop(0.40, "rgba(255,255,255,0)");
+        hl.addColorStop(0.5,  "rgba(255,255,255,0.20)");
+        hl.addColorStop(0.60, "rgba(255,255,255,0)");
+        ctx.fillStyle = hl;
+        ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_W, H);
+        ctx.restore();
+
+        // ==========================================================
+        // 5. LEFT PANEL — build information. Every element is
+        // measured and shrunk/truncated to guarantee it stays inside
+        // the SAFE margin — nothing is allowed to clip.
         // ==========================================================
 
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
 
-        // ---- 3a. CHARACTER NAME ----
-        var y = 30;
+        // ---- 5a. CHARACTER NAME ----
+        var y = SAFE;
+        fitFontSize(ctx, charName, CONTENT_W, "700", 32, 20);
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = "700 32px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.fillText(charName, PAD_LEFT, y);
 
-        // ---- 3b. ELEMENT BADGE + RARITY STARS ----
-        y = 72;
+        // ---- 5b. ELEMENT BADGE + RARITY STARS ----
+        y = 74;
         var elemLabel = capitalize(info.element || "");
         var badgeW = 0;
 
         if (elemLabel) {
+            ctx.font = "600 10px " + FONT;
             badgeW = Math.max(ctx.measureText(elemLabel).width + 16, 50);
             roundRectPath(ctx, PAD_LEFT, y, badgeW, 20, 10);
             ctx.fillStyle = eHex + "22";
             ctx.fill();
 
             ctx.fillStyle = eHex;
-            ctx.font = "600 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.fillText(elemLabel, PAD_LEFT + 8, y + 5);
         }
 
-        // Rarity stars
         var starStr = "";
         var rarity = info.rarity || 4;
         for (var si = 0; si < rarity; si++) starStr += "★";
         if (starStr) {
             ctx.fillStyle = rarity >= 5 ? "#D6B96C" : "#B79EDB";
-            ctx.font = "12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.font = "12px " + FONT;
             ctx.fillText(starStr, PAD_LEFT + (elemLabel ? badgeW + 10 : 0), y + 4);
         }
 
-        // ---- 3c. BIG SCORE + GRADE BADGE ----
-        y = 106;
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "700 46px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        // ---- 5c. BIG SCORE + GRADE BADGE ----
+        y = 108;
+        var gbSize = 34;
         var scoreStr = String(score);
+        // Reserve room for the grade badge + gap so the score never
+        // pushes it (or itself) past the safe content width.
+        var scoreMaxW = CONTENT_W - gbSize - 14;
+        fitFontSize(ctx, scoreStr, scoreMaxW, "700", 46, 30);
+        ctx.fillStyle = "#FFFFFF";
         ctx.fillText(scoreStr, PAD_LEFT, y);
         var scoreW = ctx.measureText(scoreStr).width;
 
-        // Grade badge: bordered rounded square, sits beside the score
-        var gbSize = 34;
         var gbX = PAD_LEFT + scoreW + 14;
         var gbY = y + 4;
         roundRectPath(ctx, gbX, gbY, gbSize, gbSize, 8);
@@ -276,17 +378,16 @@
         ctx.lineWidth = 1.5;
         ctx.stroke();
         ctx.fillStyle = gradeColor;
-        ctx.font = "700 16px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "700 16px " + FONT;
         ctx.textAlign = "center";
         ctx.fillText(grade, gbX + gbSize / 2, gbY + gbSize / 2 - 8);
         ctx.textAlign = "left";
 
-        // "OVERALL SCORE" label — stays under the score number, inside CONTENT_W
         ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.font = "500 10px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "500 10px " + FONT;
         ctx.fillText("OVERALL SCORE", PAD_LEFT, y + 54);
 
-        // ---- 3d. ACCENT RULE ----
+        // ---- 5d. ACCENT RULE ----
         var ruleY = y + 78;
         ctx.save();
         ctx.strokeStyle = eHex + "35";
@@ -297,35 +398,35 @@
         ctx.stroke();
         ctx.restore();
 
-        // ---- 3e. CRIT RATIO ----
+        // ---- 5e. CRIT RATIO ----
         var cy = ruleY + 18;
 
-        // Label
         ctx.fillStyle = "rgba(255,255,255,0.45)";
-        ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "500 9.5px " + FONT;
         ctx.fillText("CRIT RATIO", PAD_LEFT, cy);
 
-        // CR / CD values
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "700 17px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
         var critLine = cr + "% / " + cd + "%";
+        var cvLabel = "·  CV " + cv;
+        // Fit the crit line + CV label together so the pair never
+        // runs past the content width.
+        ctx.font = "500 14px " + FONT;
+        var cvLabelW = ctx.measureText(cvLabel).width;
+        fitFontSize(ctx, critLine, CONTENT_W - cvLabelW - 14, "700", 17, 12);
+        ctx.fillStyle = "#FFFFFF";
         ctx.fillText(critLine, PAD_LEFT, cy + 15);
         var critLineW = ctx.measureText(critLine).width;
 
-        // CV — inline after the crit line, separated by a dot (stays left-anchored
-        // so it can never run off the left edge of the card)
         ctx.fillStyle = "rgba(255,255,255,0.55)";
-        ctx.font = "500 14px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.fillText("·  CV " + cv, PAD_LEFT + critLineW + 14, cy + 17);
+        ctx.font = "500 14px " + FONT;
+        ctx.fillText(cvLabel, PAD_LEFT + critLineW + 14, cy + 17);
 
-        // ---- 3f. STATS ----
+        // ---- 5f. STATS ----
         var sy = cy + 52;
 
         ctx.fillStyle = "rgba(255,255,255,0.45)";
-        ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "500 9.5px " + FONT;
         ctx.fillText("STATS", PAD_LEFT, sy);
 
-        // Build a clean array of non-zero stats
         var statDefs = [
             { key: "hp",  label: "HP",  fmtKey: "hp" },
             { key: "atk", label: "ATK", fmtKey: "atk" },
@@ -344,7 +445,7 @@
 
         var statTop = sy + 16;
         var halfCol = CONTENT_W / 2;
-        var statLabelW = 35;  // fixed width for the label column
+        var statLabelW = 35;
 
         for (var j = 0; j < entries.length; j++) {
             var col = j % 2;
@@ -352,40 +453,49 @@
             var ex = PAD_LEFT + (col === 0 ? 0 : halfCol);
             var ey = statTop + row * 22;
 
-            // Label
             ctx.fillStyle = "rgba(255,255,255,0.6)";
-            ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.font = "500 12px " + FONT;
             ctx.textBaseline = "top";
             ctx.fillText(entries[j].label, ex, ey);
 
-            // Value
             ctx.fillStyle = "#FFFFFF";
-            ctx.font = "600 13px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.fillText(entries[j].value, ex + statLabelW, ey);
+            ctx.font = "600 13px " + FONT;
+            // Values on the right column share the half-column width
+            // with the left one's badge-free layout, so cap width to
+            // avoid crowding the divider.
+            var valMaxW = halfCol - statLabelW - 6;
+            var valText = truncateToWidth(ctx, entries[j].value, valMaxW);
+            ctx.fillText(valText, ex + statLabelW, ey);
         }
 
-        // ---- 3h. EQUIPMENT ----
+        // ---- 5g. EQUIPMENT ----
         var statRows = Math.ceil(entries.length / 2);
         var eqTop = statTop + statRows * 22 + 14;
 
         var hasWeapon = result.weapon_name;
         var hasSet = result.primary_artifact_set_name;
 
-        // ---- 3g. EQUIPMENT (only if data was provided) ----
         if (hasWeapon || hasSet) {
             ctx.fillStyle = "rgba(255,255,255,0.45)";
-            ctx.font = "500 9.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.font = "500 9.5px " + FONT;
             ctx.fillText("EQUIPMENT", PAD_LEFT, eqTop);
 
             var eqY = eqTop + 16;
+            var badgeGap = 8;
+            var badgeW2 = 46;
 
             if (hasWeapon) {
                 var wr = result.weapon_refinement ? "  R" + result.weapon_refinement : "";
+                var weaponText = result.weapon_name + wr;
                 ctx.fillStyle = "rgba(255,255,255,0.8)";
-                ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                ctx.fillText(result.weapon_name + wr, PAD_LEFT, eqY);
+                ctx.font = "500 12px " + FONT;
+                var weaponMaxW = result.weapon_tier
+                    ? CONTENT_W - badgeW2 - badgeGap
+                    : CONTENT_W;
+                weaponText = truncateToWidth(ctx, weaponText, weaponMaxW);
+                ctx.fillText(weaponText, PAD_LEFT, eqY);
                 if (result.weapon_tier) {
-                    drawTierBadge(ctx, result.weapon_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
+                    drawTierBadge(ctx, result.weapon_tier, PAD_LEFT + CONTENT_W - badgeW2, eqY - 1);
                 }
                 eqY += 22;
             }
@@ -396,23 +506,27 @@
                     setLabel += "  " + result.primary_artifact_set_count + "pc";
                 }
                 ctx.fillStyle = "rgba(255,255,255,0.8)";
-                ctx.font = "500 12px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.font = "500 12px " + FONT;
+                var setMaxW = result.artifact_tier
+                    ? CONTENT_W - badgeW2 - badgeGap
+                    : CONTENT_W;
+                setLabel = truncateToWidth(ctx, setLabel, setMaxW);
                 ctx.fillText(setLabel, PAD_LEFT, eqY);
                 if (result.artifact_tier) {
-                    drawTierBadge(ctx, result.artifact_tier, PAD_LEFT + CONTENT_W - 46, eqY - 1);
+                    drawTierBadge(ctx, result.artifact_tier, PAD_LEFT + CONTENT_W - badgeW2, eqY - 1);
                 }
             }
         }
 
-        // ---- 3g. FOOTER - tiny wordmark, bottom-right corner ----
+        // ---- 5h. FOOTER — tiny wordmark, bottom-right, safe margin ----
         ctx.textAlign = "right";
-        ctx.fillStyle = "rgba(255,255,255,0.11)";
-        ctx.font = "400 8.5px 'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.13)";
+        ctx.font = "400 8.5px " + FONT;
         ctx.textBaseline = "bottom";
-        ctx.fillText("CritCal", W - 18, H - 16);
+        ctx.fillText("CritCal", W - SAFE, H - SAFE + 8);
 
         // ==========================================================
-        // 4. OUTPUT
+        // 6. OUTPUT
         // ==========================================================
 
         return new Promise(function (resolve) {
