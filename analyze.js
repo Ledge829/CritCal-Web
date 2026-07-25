@@ -231,15 +231,15 @@ function renderResult(data) {
 
             <div class="score-row">
                 <div class="score-chip">
-                    <span class="score-value">${data.overall_score ?? "--"}</span>
+                    <span class="score-value">${data.overall_score ?? "—"}</span>
                     <span class="score-label">Score</span>
                 </div>
                 <div class="score-chip">
-                    <span class="score-value">${data.crit_value ?? "--"}</span>
+                    <span class="score-value">${data.crit_value ?? "—"}</span>
                     <span class="score-label">Crit Value</span>
                 </div>
                 <div class="score-chip">
-                    <span class="score-value">${data.crit_rate ?? "--"}% / ${data.crit_dmg ?? "--"}%</span>
+                    <span class="score-value">${data.crit_rate ?? "—"}% / ${data.crit_dmg ?? "—"}%</span>
                     <span class="score-label">Crit Ratio</span>
                 </div>
             </div>

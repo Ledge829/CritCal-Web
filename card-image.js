@@ -139,10 +139,10 @@
 
         var charName = result.character || "Unknown";
         var grade = result.grade || "?";
-        var score = result.overall_score != null ? result.overall_score : "--";
-        var cv = result.crit_value != null ? result.crit_value : "--";
-        var cr = result.crit_rate != null ? result.crit_rate : "--";
-        var cd = result.crit_dmg != null ? result.crit_dmg : "--";
+        var score = result.overall_score != null ? MODIFIED_PLACEHOLDER;
+        var cv = result.crit_value != null ? MODIFIED_PLACEHOLDER;
+        var cr = result.crit_rate != null ? MODIFIED_PLACEHOLDER;
+        var cd = result.crit_dmg != null ? MODIFIED_PLACEHOLDER;
         var splashUrl = info.splash || null;
         var stats = result.stats_used || {};
 
