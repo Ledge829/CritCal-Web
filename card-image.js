@@ -27,7 +27,7 @@
     var SPLASH_LEFT = 540;    // right panel starts here (54%)
     var PAD_LEFT = 30;         // left panel content padding
     var CONTENT_W = SPLASH_LEFT - PAD_LEFT * 2;  // ~480px
-    var ATMO_FADE = 120;       // width of the art fade-in gradient
+    var ATMO_FADE = 210;       // width of the art fade-in gradient
 
     // ==========================================================
     // ELEMENT ATMOSPHERE PROFILES
@@ -153,15 +153,19 @@
         ctx.fillStyle = "#080A0E";
         ctx.fillRect(0, 0, W, H);
 
-        // Element atmosphere — a very soft, wide radial glow that
-        // never forms visible rings or hard edges.
+        // Element atmosphere — the glow's hot core sits on the splash
+        // art side (like a spotlight on the character), and fades out
+        // gradually as it reaches the text panel, which stays dark and
+        // high-contrast for legibility.
         var atmos = ctx.createRadialGradient(
-            SPLASH_LEFT - 100, H * 0.4, H * 0.12,
-            SPLASH_LEFT - 100, H * 0.4, H * 0.9
+            SPLASH_LEFT + 60, H * 0.38, 10,
+            SPLASH_LEFT + 60, H * 0.38, W * 0.68
         );
-        atmos.addColorStop(0, eHex + "0C");
-        atmos.addColorStop(0.5, eHex + "04");
-        atmos.addColorStop(1, "#080A0E");
+        atmos.addColorStop(0,    eHex + "45");
+        atmos.addColorStop(0.18, eHex + "26");
+        atmos.addColorStop(0.36, eDark + "CC");
+        atmos.addColorStop(0.6,  "#080A0E");
+        atmos.addColorStop(1,    "#080A0E");
         ctx.fillStyle = atmos;
         ctx.fillRect(0, 0, W, H);
 
@@ -201,11 +205,13 @@
 
                 // Gradient mask — left edge of the art fades into the
                 // dark background so the character "emerges" from the
-                // atmosphere rather than sitting in a box.
+                // atmosphere rather than sitting in a box. Wider, with
+                // more stops, for a softer, more gradual blend.
                 var fadeGrad = ctx.createLinearGradient(SPLASH_LEFT, 0, SPLASH_LEFT + ATMO_FADE, 0);
                 fadeGrad.addColorStop(0,    "rgba(8,10,14,1)");
-                fadeGrad.addColorStop(0.4,  "rgba(8,10,14,0.5)");
-                fadeGrad.addColorStop(0.7,  "rgba(8,10,14,0.15)");
+                fadeGrad.addColorStop(0.25, "rgba(8,10,14,0.75)");
+                fadeGrad.addColorStop(0.5,  "rgba(8,10,14,0.42)");
+                fadeGrad.addColorStop(0.75, "rgba(8,10,14,0.16)");
                 fadeGrad.addColorStop(1,    "rgba(8,10,14,0)");
                 ctx.fillStyle = fadeGrad;
                 ctx.fillRect(SPLASH_LEFT, 0, ATMO_FADE, ph);
