@@ -164,35 +164,20 @@
         ctx.fillStyle = "#161A24";
         ctx.fillRect(DIVIDER_RIGHT, 0, W - DIVIDER_RIGHT, H);
 
-        // ── Cinematic centre spotlight ──
-        // A single wide radial glow centred on the divider. This is the
-        // theatrical "stage light" that illuminates the centre of the
-        // card — the character's element colour radiates from here.
-        var spotCX = DIVIDER_LEFT + 40;
-        var spotCY = H * 0.42;
-        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.01, spotCX, spotCY, H * 0.85);
-        spot.addColorStop(0, eHex + "1C");
-        spot.addColorStop(0.25, eHex + "0E");
-        spot.addColorStop(0.55, eHex + "04");
-        spot.addColorStop(0.8, eHex + "01");
-        spot.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = spot;
-        ctx.fillRect(0, 0, W, H);
-
-        // ── Element-lit divider ──
-        // The divider catches the spotlight and glows with the
-        // character's element colour — this is the "blend" between
-        // the character theme and the card's centre.
-        var divGrad = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
-        divGrad.addColorStop(0, "rgba(0,0,0,0)");
-        divGrad.addColorStop(0.25, eHex + "08");
-        divGrad.addColorStop(0.45, eHex + "14");
-        divGrad.addColorStop(0.50, eHex + "18");
-        divGrad.addColorStop(0.55, eHex + "14");
-        divGrad.addColorStop(0.75, eHex + "08");
-        divGrad.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = divGrad;
-        ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_RIGHT - DIVIDER_LEFT, H);
+        // ── Element-lit centre beam ──
+        // The divider IS the spotlight. A concentrated vertical glow
+        // at the centre of the card with the character's element colour.
+        // Light radiates from the divider outward but stays focused there.
+        var beam = ctx.createLinearGradient(DIVIDER_LEFT - 20, 0, DIVIDER_RIGHT + 20, 0);
+        beam.addColorStop(0, "rgba(0,0,0,0)");
+        beam.addColorStop(0.30, eHex + "04");
+        beam.addColorStop(0.45, eHex + "22");
+        beam.addColorStop(0.50, eHex + "2A");
+        beam.addColorStop(0.55, eHex + "22");
+        beam.addColorStop(0.70, eHex + "04");
+        beam.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = beam;
+        ctx.fillRect(DIVIDER_LEFT - 20, 0, 80, H);
 
         // ==========================================================
         // 2. SPLASH ART (right side) — with gradient blend into bg
