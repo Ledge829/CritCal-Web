@@ -149,46 +149,67 @@
         ctx.textBaseline = "top";
 
         // ==========================================================
-        // 1. BACKGROUND — dark canvas + element spotlight + glass divider
+        // 1. BACKGROUND — ambient cinematic lighting + glass divider
         // ==========================================================
 
-        // Dark base for the entire card
-        ctx.fillStyle = "#080A0E";
+        // Unified dark base — one continuous tone across the whole card
+        ctx.fillStyle = "#0E1119";
         ctx.fillRect(0, 0, W, H);
 
-        // Left panel — clean dark surface for text readability
-        ctx.fillStyle = "#11141B";
-        ctx.fillRect(0, 0, DIVIDER_LEFT, H);
+        // Ambient edge darkness — subtle vignette so the lighting feels
+        // natural and contained rather than a flat screen.
+        var vig = ctx.createRadialGradient(W * 0.5, H * 0.45, H * 0.15, W * 0.5, H * 0.45, H * 0.85);
+        vig.addColorStop(0, "rgba(14,17,25,0)");
+        vig.addColorStop(0.7, "rgba(14,17,25,0)");
+        vig.addColorStop(0.85, "rgba(14,17,25,0.15)");
+        vig.addColorStop(1, "rgba(14,17,25,0.30)");
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
 
-        // Right panel — slightly lifted dark tone behind the artwork
-        ctx.fillStyle = "#161A24";
-        ctx.fillRect(DIVIDER_RIGHT, 0, W - DIVIDER_RIGHT, H);
-
-        // ── ONE very large, extremely soft radial spotlight ──
-        // Centered slightly right of the divider. Large inner radius
-        // eliminates any visible centre spot; very low opacity keeps
-        // it as ambient atmosphere rather than a visible light source.
-        var spotCX = DIVIDER_RIGHT + 25;
+        // ── Cinematic spotlight (two blended layers) ──
+        // Layer 1: Very wide, extremely soft spread — the "ambient wash"
+        // that covers the divider and most of the artwork area.
+        var spotCX = DIVIDER_RIGHT + 20;
         var spotCY = H * 0.40;
-        var spot = ctx.createRadialGradient(spotCX, spotCY, H * 0.15, spotCX, spotCY, H * 0.92);
-        spot.addColorStop(0, eHex + "08");
-        spot.addColorStop(0.5, eHex + "03");
-        spot.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = spot;
-        ctx.fillRect(DIVIDER_LEFT, 0, W - DIVIDER_LEFT, H);
+        var wash = ctx.createRadialGradient(spotCX, spotCY, H * 0.01, spotCX, spotCY, H * 1.0);
+        wash.addColorStop(0, eHex + "04");
+        wash.addColorStop(0.4, eHex + "02");
+        wash.addColorStop(0.75, eHex + "01");
+        wash.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = wash;
+        ctx.fillRect(0, 0, W, H);
 
-        // ── Glass divider between panels ──
-        // A translucent vertical strip with a faint center highlight.
-        // 80px wide, centered between the left and right halves.
+        // Layer 2: Tighter core — slightly brighter near the divider,
+        // falls off before reaching the right edge. This layer gives
+        // the artwork a subtle centre of attention without a visible hotspot.
+        var core = ctx.createRadialGradient(spotCX, spotCY, H * 0.08, spotCX + 40, spotCY + 10, H * 0.65);
+        core.addColorStop(0, eHex + "06");
+        core.addColorStop(0.45, eHex + "02");
+        core.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = core;
+        ctx.fillRect(DIVIDER_LEFT - 20, 0, W - DIVIDER_LEFT + 20, H);
+
+        // ── Glass divider ──
+        // Frosted glass strip between panels with a faint vertical
+        // highlight and a subtle glow from the spotlight behind it.
         var divGrad = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
         divGrad.addColorStop(0, "rgba(255,255,255,0)");
-        divGrad.addColorStop(0.2, "rgba(255,255,255,0.025)");
-        divGrad.addColorStop(0.45, "rgba(255,255,255,0.05)");
-        divGrad.addColorStop(0.50, "rgba(255,255,255,0.07)");  // faint centre highlight
-        divGrad.addColorStop(0.55, "rgba(255,255,255,0.05)");
-        divGrad.addColorStop(0.8, "rgba(255,255,255,0.025)");
+        divGrad.addColorStop(0.15, "rgba(255,255,255,0.02)");
+        divGrad.addColorStop(0.40, "rgba(255,255,255,0.04)");
+        divGrad.addColorStop(0.48, "rgba(255,255,255,0.07)");  // centre highlight
+        divGrad.addColorStop(0.52, "rgba(255,255,255,0.07)");
+        divGrad.addColorStop(0.60, "rgba(255,255,255,0.04)");
+        divGrad.addColorStop(0.85, "rgba(255,255,255,0.02)");
         divGrad.addColorStop(1, "rgba(255,255,255,0)");
+        // Add a subtle element tint to the divider so it picks up the spotlight
+        var divEl = ctx.createLinearGradient(DIVIDER_LEFT, 0, DIVIDER_RIGHT, 0);
+        divEl.addColorStop(0, "rgba(0,0,0,0)");
+        divEl.addColorStop(0.4, eHex + "04");
+        divEl.addColorStop(0.6, eHex + "04");
+        divEl.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = divGrad;
+        ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_RIGHT - DIVIDER_LEFT, H);
+        ctx.fillStyle = divEl;
         ctx.fillRect(DIVIDER_LEFT, 0, DIVIDER_RIGHT - DIVIDER_LEFT, H);
 
         // ==========================================================
