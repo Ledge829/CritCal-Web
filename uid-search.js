@@ -28,6 +28,8 @@
             return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
         } catch (_) { return []; }
     }
+    // Expose for homepage to use
+    window.__getUidHistory = getHistory;
 
     function addHistory(uid) {
         var h = getHistory().filter(function (u) { return u !== uid; });
