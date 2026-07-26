@@ -436,7 +436,7 @@
                         '</div>' +
                         '<div class="uid-char-score">' +
                             '<span class="score-value" style="color:' + gradeColor + '">' +
-                                (c.overall_score != null ? MODIFIED_PLACEHOLDER) +
+                                (c.overall_score != null ? c.overall_score : "—") +
                             '</span>' +
                             '<span class="score-label">Score</span>' +
                         '</div>' +
@@ -570,17 +570,17 @@
             '<div class="uid-detail-scores">' +
                 '<div class="score-chip">' +
                     '<span class="score-value" style="color:' + gradeColor + '">' +
-                        (c.overall_score != null ? MODIFIED_PLACEHOLDER) +
+                        (c.overall_score != null ? c.overall_score : "—") +
                     '</span>' +
                     '<span class="score-label">Score</span>' +
                 '</div>' +
                 '<div class="score-chip">' +
-                    '<span class="score-value">' + (c.crit_value != null ? MODIFIED_PLACEHOLDER) + '</span>' +
+                    '<span class="score-value">' + (c.crit_value != null ? c.crit_value : "—") + '</span>' +
                     '<span class="score-label">Crit Value</span>' +
                 '</div>' +
                 '<div class="score-chip">' +
-                    '<span class="score-value">' + (c.crit_rate != null ? MODIFIED_PLACEHOLDER) + '% / ' +
-                    (c.crit_dmg != null ? MODIFIED_PLACEHOLDER) + '%</span>' +
+                    '<span class="score-value">' + (c.crit_rate != null ? c.crit_rate : "—") + '% / ' +
+                    (c.crit_dmg != null ? c.crit_dmg : "—") + '%</span>' +
                     '<span class="score-label">Crit Ratio</span>' +
                 '</div>' +
             '</div>' +
