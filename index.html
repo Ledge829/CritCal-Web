@@ -13,15 +13,11 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://critcal.vercel.app/">
     <meta property="og:title" content="CritCal — Genshin Impact Build Analysis">
-    <meta property="og:description" content="A community-built, open-source tool for rating Genshin Impact character builds. Every score is explained — no black box.">
+    <meta property="og:description" content="A community-built, open-source tool for rating Genshin Impact character builds.">
     <meta property="og:image" content="https://critcal.vercel.app/assets/social/og-image.png">
     <meta property="og:site_name" content="CritCal">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="CritCal — Genshin Impact Build Analysis">
-    <meta name="twitter:description" content="A community-built, open-source tool for rating Genshin Impact character builds.">
-    <meta name="twitter:image" content="https://critcal.vercel.app/assets/social/og-image.png">
-
     <meta name="theme-color" content="#0A0D13">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
@@ -76,100 +72,75 @@
 <main id="main-content">
 
     <!-- ════════════════════════════════════════════ -->
-    <!-- HERO: UID SEARCH — the primary action       -->
+    <!-- UID SEARCH — compact, no fluff               -->
     <!-- ════════════════════════════════════════════ -->
 
-    <section class="home-hero fade-up">
-        <div class="home-hero-inner">
-            <div class="home-hero-search">
-                <span class="eyebrow">UID Lookup</span>
-                <h1 class="home-hero-title">Search by UID</h1>
-                <p class="home-hero-sub">
-                    Pull any player's showcased characters and get instant build ratings.
-                </p>
-                <div class="home-hero-box">
-                    <input type="text" id="uid-input-home" placeholder="Enter a UID..." inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Player UID">
-                    <button class="btn btn-primary" id="uid-search-home-btn">Search</button>
+    <section class="hp-hero fade-up">
+        <div class="hp-hero-inner">
+            <div class="hp-search-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </div>
+            <div class="hp-search-main">
+                <div class="hp-search-row">
+                    <input type="text" id="uid-input-home" placeholder="Enter a UID and rate any showcase..." inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Player UID">
+                    <button class="btn btn-primary" id="uid-search-home-btn">Analyze</button>
                 </div>
-                <div id="uid-history-home" class="uid-history-area"></div>
+                <div id="uid-history-home" class="hp-history"></div>
             </div>
         </div>
     </section>
 
     <!-- ════════════════════════════════════════════ -->
-    <!-- STATS BAR                                   -->
+    <!-- RANDOM CHARACTER SHOWCASE                    -->
     <!-- ════════════════════════════════════════════ -->
 
-    <section class="home-stats fade-up fade-up-1">
-        <div class="home-stat">
-            <strong id="char-count-home">120+</strong>
-            <span>Characters</span>
-        </div>
-        <div class="home-stat">
-            <strong id="home-weapon-count">210+</strong>
-            <span>Weapons</span>
-        </div>
-        <div class="home-stat">
-            <strong id="home-set-count">60+</strong>
-            <span>Sets</span>
-        </div>
-        <div class="home-stat">
-            <strong>Open Source</strong>
-            <span>MIT License</span>
-        </div>
-    </section>
-
-    <!-- ════════════════════════════════════════════ -->
-    <!-- FEATURED CHARACTER                          -->
-    <!-- ════════════════════════════════════════════ -->
-
-    <section class="home-featured fade-up fade-up-1" id="home-featured">
-        <div class="home-featured-card">
-            <div class="home-featured-info">
-                <span class="eyebrow" style="color:var(--gold);">Featured Character</span>
-                <h2 id="featured-name">Furina</h2>
-                <p class="featured-desc" id="featured-desc">Universal buffer, off-field Hydro DMG. See her build tiers and rate your own.</p>
-                <a class="btn btn-primary" id="featured-link" href="analyze.html?character=Furina">
+    <section class="hp-showcase fade-up fade-up-1" id="hp-showcase">
+        <div class="hp-showcase-bg" id="hp-showcase-bg"></div>
+        <div class="hp-showcase-overlay"></div>
+        <div class="hp-showcase-content">
+            <div class="hp-showcase-info">
+                <span class="eyebrow hp-showcase-label">Random Build</span>
+                <h2 id="hp-char-name">Loading...</h2>
+                <p class="hp-char-desc" id="hp-char-desc"></p>
+                <a class="btn btn-primary" id="hp-char-link" href="#">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
-                    Analyze Furina
+                    Rate this character
                 </a>
             </div>
-            <div class="home-featured-art" id="featured-art">
-                <div class="home-featured-splash" id="featured-splash"></div>
-            </div>
+            <div class="hp-showcase-portrait" id="hp-char-portrait"></div>
         </div>
     </section>
 
     <!-- ════════════════════════════════════════════ -->
-    <!-- QUICK ACTIONS                                -->
+    <!-- STATS + QUICK ACTIONS — compact row          -->
     <!-- ════════════════════════════════════════════ -->
 
-    <div class="home-actions fade-up fade-up-2">
-        <a class="home-action-card" href="analyze.html">
-            <span class="home-action-icon" aria-hidden="true">
+    <div class="hp-actions fade-up fade-up-2">
+        <a class="hp-action" href="analyze.html">
+            <span class="hp-action-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
             </span>
-            <span class="home-action-text">
-                <strong>Manual Analyze</strong>
-                <span>Enter your own stats for a custom rating</span>
+            <span>
+                <strong>Manual Rate</strong>
+                <span>Enter your own stats</span>
             </span>
         </a>
-        <a class="home-action-card" href="characters.html">
-            <span class="home-action-icon" aria-hidden="true">
+        <a class="hp-action" href="characters.html">
+            <span class="hp-action-icon hp-action-icon-char">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
             </span>
-            <span class="home-action-text">
-                <strong>Browse Characters</strong>
-                <span>Explore all characters and their build data</span>
+            <span>
+                <strong>Characters</strong>
+                <span id="char-count-home">120+</span>
             </span>
         </a>
-        <a class="home-action-card" href="uid-search.html">
-            <span class="home-action-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <a class="hp-action hp-action-stats" href="about.html">
+            <span class="hp-action-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>
             </span>
-            <span class="home-action-text">
-                <strong>UID History</strong>
-                <span>View your recent UID searches</span>
+            <span>
+                <strong><span id="home-weapon-count">210+</span> Weapons</strong>
+                <span><span id="home-set-count">60+</span> Artifact Sets</span>
             </span>
         </a>
     </div>
@@ -178,9 +149,9 @@
     <!-- CHARACTER MINI GRID                          -->
     <!-- ════════════════════════════════════════════ -->
 
-    <section class="home-char-section fade-up fade-up-3" aria-labelledby="home-char-heading">
+    <section class="hp-chars fade-up fade-up-3" aria-labelledby="hp-chars-heading">
         <div class="home-char-header">
-            <h2 class="eyebrow" id="home-char-heading">Characters</h2>
+            <h2 class="eyebrow" id="hp-chars-heading">Characters</h2>
             <a href="characters.html" class="home-char-view-all">View all</a>
         </div>
         <div class="home-char-pills" id="home-char-pills" role="group" aria-label="Filter by element">
@@ -213,117 +184,108 @@
 <script src="icons.js"></script>
 <script src="portraits.js"></script>
 <script>
-    // ---------- Homepage UID search ----------
-    const homeUidInput = document.getElementById("uid-input-home");
-    const homeUidBtn = document.getElementById("uid-search-home-btn");
-
-    function searchHomeUid() {
-        const uid = (homeUidInput.value || "").trim();
-        if (!uid) { homeUidInput.focus(); return; }
-        window.location.href = "uid-search.html?uid=" + encodeURIComponent(uid);
-    }
-
-    if (homeUidBtn) {
-        homeUidBtn.addEventListener("click", searchHomeUid);
-    }
-    if (homeUidInput) {
-        homeUidInput.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") searchHomeUid();
-        });
-    }
-
-    // ---------- Featured character ----------
-    // Rotate through a few characters each page load
-    const featured = [
-        { key: "furina", name: "Furina", element: "hydro", desc: "Universal buffer, off-field Hydro DMG. See her build tiers and rate your own.", splash: "" },
-        { key: "hutao", name: "Hu Tao", element: "pyro", desc: "Pyro DPS hypercarry. Vaporize, Melt, or Mono Pyro — check her best builds.", splash: "" },
-        { key: "neuvillette", name: "Neuvillette", element: "hydro", desc: "Charged Attack Hydro hypercarry. One of the most flexible DPS units.", splash: "" },
-        { key: "nahida", name: "Nahida", element: "dendro", desc: "The Dendro archon. Off-field Dendro application, EM share, and more.", splash: "" },
-    ];
-    const pick = featured[Math.floor(Math.random() * featured.length)];
-    document.getElementById("featured-name").textContent = pick.name;
-    document.getElementById("featured-desc").textContent = pick.desc;
-    document.getElementById("featured-link").href = "analyze.html?character=" + encodeURIComponent(pick.name);
-    document.getElementById("featured-link").innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg> Analyze ' + pick.name;
-
-    // Featured splash art
-    const splashEl = document.getElementById("featured-splash");
-    const featEl = document.getElementById("featured-art");
-    featEl.style.setProperty("--el-color", elementColor(pick.element));
-
-    // Try loading the splash art from the character API
-    cachedFetch(API_BASE + "/characters", "characters").then(function (data) {
-        if (data && data.characters) {
-            const match = data.characters.find(function (c) { return c.name.toLowerCase() === pick.key; });
-            if (match && match.splash) {
-                splashEl.style.backgroundImage = "url(" + match.splash + ")";
-                splashEl.style.backgroundSize = "cover";
-                splashEl.style.backgroundPosition = "center 15%";
-            }
-        }
-    });
-
-    // ---------- Homepage character mini-grid ----------
+    // ── UID Search ──
     (function () {
-        const grid = document.getElementById("home-char-grid");
-        const pills = document.querySelectorAll("#home-char-pills .element-pill");
-        if (!grid) return;
-
-        let allChars = [];
-        let activeEl = "";
-
-        function renderGrid() {
-            const filtered = activeEl ? allChars.filter((c) => c.element === activeEl) : allChars;
-            if (!filtered.length) {
-                grid.innerHTML = '<div class="home-char-loading">No characters match.</div>';
-                return;
-            }
-            grid.innerHTML = filtered.slice(0, 24).map((c) => {
-                const color = elementColor(c.element);
-                return '<a class="home-char-tile" href="analyze.html?character=' + encodeURIComponent(c.name) + '" style="--el-color:' + color + '">' +
-                    '<span class="home-char-tile-avatar" style="--el-color:' + color + '">' +
-                        portraitInnerHtml(c) +
-                    '</span>' +
-                    '<span class="home-char-tile-name">' + escapeHtml(c.name) + '</span>' +
-                '</a>';
-            }).join("");
+        var input = document.getElementById("uid-input-home");
+        var btn = document.getElementById("uid-search-home-btn");
+        function go() {
+            var uid = (input.value || "").trim();
+            if (!uid) { input.focus(); return; }
+            window.location.href = "uid-search.html?uid=" + encodeURIComponent(uid);
         }
+        if (btn) btn.addEventListener("click", go);
+        if (input) input.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+    })();
 
-        pills.forEach(function (pill) {
-            pill.addEventListener("click", function () {
-                pills.forEach(function (p) { p.classList.remove("is-active"); p.setAttribute("aria-pressed", "false"); });
-                this.classList.add("is-active");
-                this.setAttribute("aria-pressed", "true");
-                activeEl = this.getAttribute("data-el") || "";
-                renderGrid();
-            });
-        });
+    // ── UID History ──
+    (function () {
+        var el = document.getElementById("uid-history-home");
+        if (!el) return;
+        try {
+            var h = JSON.parse(localStorage.getItem("critcal_uid_history")) || [];
+            if (h.length > 0) {
+                el.innerHTML = h.map(function (u) {
+                    return '<span class="hp-history-pill" onclick="window.location.href=\'uid-search.html?uid=' + encodeURIComponent(u) + '\'">' + u + '</span>';
+                }).join("");
+            }
+        } catch (_) {}
+    })();
 
+    // ── Random Character Showcase ──
+    (function () {
+        var picks = [
+            { key: "hutao", name: "Hu Tao", element: "pyro", desc: "Pyro polearm DPS. Vaporize hypercarry with strong single-target damage." },
+            { key: "furina", name: "Furina", element: "hydro", desc: "Fontaine's archon. Universal buffer, off-field Hydro, flexible in any team." },
+            { key: "nahida", name: "Nahida", element: "dendro", desc: "The Dendro Archon. Off-field Dendro, EM share, reaction driver." },
+            { key: "neuvillette", name: "Neuvillette", element: "hydro", desc: "Fontaine's Iudex. Charged Attack Hydro hypercarry with self-healing." },
+            { key: "kazuha", name: "Kaedehara Kazuha", element: "anemo", desc: "Anemo support. Elemental DMG buffer, crowd control, VV shred." },
+            { key: "raiden", name: "Raiden Shogun", element: "electro", desc: "Inazuma's archon. Energy battery, burst DPS, hypercarry." },
+            { key: "yelan", name: "Yelan", element: "hydro", desc: "Off-field Hydro DPS. Burst support with ramping personal damage." },
+            { key: "alhaitham", name: "Alhaitham", element: "dendro", desc: "Dendro on-field DPS. Spread hypercarry with mirror mechanics." },
+        ];
+        var pick = picks[Math.floor(Math.random() * picks.length)];
+
+        document.getElementById("hp-char-name").textContent = pick.name;
+        document.getElementById("hp-char-desc").textContent = pick.desc;
+        document.getElementById("hp-char-link").href = "analyze.html?character=" + encodeURIComponent(pick.name);
+
+        // Element-themed background
+        var showcase = document.getElementById("hp-showcase");
+        showcase.style.setProperty("--el-color", (function(e) {
+            return { pyro: "#E0785C", hydro: "#5B9BD6", anemo: "#6BC7AE", electro: "#B18FE0", dendro: "#97BE58", cryo: "#83C6DE", geo: "#D6B96C" }[e] || "#5B9BD6";
+        })(pick.element));
+
+        // Portrait
+        var portrait = document.getElementById("hp-char-portrait");
+        portrait.innerHTML = portraitInnerHtml(pick);
+
+        // Try loading splash art as background
         cachedFetch(API_BASE + "/characters", "characters").then(function (data) {
             if (data && data.characters) {
-                allChars = data.characters;
-                renderGrid();
-            } else {
-                grid.innerHTML = '<div class="home-char-loading">Could not load characters.</div>';
+                var match = data.characters.find(function (c) { return c.name && c.name.toLowerCase() === pick.key; });
+                if (match && match.splash) {
+                    var bg = document.getElementById("hp-showcase-bg");
+                    bg.style.backgroundImage = "url(" + match.splash + ")";
+                    bg.style.backgroundSize = "cover";
+                    bg.style.backgroundPosition = "center 20%";
+                }
             }
         });
     })();
 
-    // ---------- Homepage UID history (reads directly from localStorage) ----------
-    const homeHistory = document.getElementById("uid-history-home");
-    if (homeHistory) {
-        try {
-            var hist = JSON.parse(localStorage.getItem("critcal_uid_history")) || [];
-            if (hist.length > 0) {
-                homeHistory.innerHTML = hist.map(function (uid) {
-                    return '<span class="uid-history-pill" onclick="window.location.href=\'uid-search.html?uid=' + encodeURIComponent(uid) + '\'">' + escapeHtml(uid) + '</span>';
-                }).join("");
-                homeHistory.classList.add("is-visible");
-            }
-        } catch (_) {}
-    }
+    // ── Character Grid ──
+    (function () {
+        var grid = document.getElementById("home-char-grid");
+        var pills = document.querySelectorAll("#home-char-pills .element-pill");
+        if (!grid) return;
+        var allChars = [], activeEl = "";
+
+        function render() {
+            var f = activeEl ? allChars.filter(function (c) { return c.element === activeEl; }) : allChars;
+            if (!f.length) { grid.innerHTML = '<div class="home-char-loading">No characters match.</div>'; return; }
+            grid.innerHTML = f.slice(0, 24).map(function (c) {
+                var color = (function(e) { return { pyro:"#E0785C", hydro:"#5B9BD6", anemo:"#6BC7AE", electro:"#B18FE0", dendro:"#97BE58", cryo:"#83C6DE", geo:"#D6B96C" }[e] || "#5B9BD6"; })(c.element);
+                return '<a class="home-char-tile" href="analyze.html?character=' + encodeURIComponent(c.name) + '" style="--el-color:' + color + '">' +
+                    '<span class="home-char-tile-avatar" style="--el-color:' + color + '">' + portraitInnerHtml(c) + '</span>' +
+                    '<span class="home-char-tile-name">' + escapeHtml(c.name) + '</span></a>';
+            }).join("");
+        }
+
+        pills.forEach(function (p) {
+            p.addEventListener("click", function () {
+                pills.forEach(function (x) { x.classList.remove("is-active"); x.setAttribute("aria-pressed", "false"); });
+                this.classList.add("is-active"); this.setAttribute("aria-pressed", "true");
+                activeEl = this.getAttribute("data-el") || "";
+                render();
+            });
+        });
+
+        cachedFetch(API_BASE + "/characters", "characters").then(function (data) {
+            if (data && data.characters) { allChars = data.characters; render(); }
+            else { grid.innerHTML = '<div class="home-char-loading">Could not load characters.</div>'; }
+        });
+    })();
 </script>
 
 </body>
-
 </html>
