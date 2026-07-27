@@ -242,7 +242,10 @@ h1, h2, h3, h4 {
     font-weight: 600;
 }
 
-.nav-cta { display: none; }
+.nav-cta {
+    display: none;
+    margin-left: auto;
+}
 
 .menu-button {
     width: 40px;
@@ -517,11 +520,35 @@ footer a:hover { color: var(--primary); }
     align-items: center;
     justify-content: center;
     transition: background var(--fast) var(--ease);
+    overflow: hidden;
+}
+
+.hp-search-icon svg { width: 20px; height: 20px; }
+
+.hp-search-char {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--el-color, var(--primary));
 }
 
 .hp-hero-inner:focus-within .hp-search-icon {
     background: var(--primary);
     color: var(--primary-text-on);
+}
+
+.hp-search-avatar {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--el-color, var(--primary)) 30%, transparent);
+}
+
+.hp-search-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .hp-search-main {
@@ -734,25 +761,25 @@ footer a:hover { color: var(--primary); }
     transform: translateY(-1px);
 }
 
-.hp-action-avatar {
+.crit-avatar {
     flex-shrink: 0;
     width: 40px;
     height: 40px;
     border-radius: 12px;
     overflow: hidden;
-    background: var(--card);
-    border: 1px solid color-mix(in srgb, var(--el-color, var(--primary)) 25%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--el-color, var(--primary)) 30%, transparent);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform var(--fast) var(--ease);
+    transition: transform var(--fast) var(--ease), border-color var(--fast) var(--ease);
 }
 
-.hp-action:hover .hp-action-avatar {
+.hp-action:hover .crit-avatar {
     transform: scale(1.08);
+    border-color: var(--el-color, var(--primary));
 }
 
-.hp-action-avatar img {
+.crit-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -780,8 +807,8 @@ footer a:hover { color: var(--primary); }
     .hp-search-row .btn { width: 100%; padding: 11px 20px; }
     .hp-history { margin-top: 8px; }
 
-    .hp-showcase { min-height: 180px; }
-    .hp-showcase-content { padding: 22px 18px; flex-direction: column-reverse; text-align: center; }
+    .hp-showcase { min-height: 180px; margin-left: 6%; margin-right: 6%; }
+    .hp-showcase-content { padding: 22px 20px; flex-direction: column-reverse; text-align: center; }
     .hp-showcase-info h2 { font-size: 22px; }
     .hp-char-desc { max-width: 100%; font-size: 13px; }
     .hp-showcase-portrait { width: 68px; height: 68px; border-radius: 14px; }

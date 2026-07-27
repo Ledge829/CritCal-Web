@@ -77,8 +77,8 @@
 
     <section class="hp-hero fade-up">
         <div class="hp-hero-inner">
-            <div class="hp-search-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <div class="hp-search-icon" id="hp-search-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             </div>
             <div class="hp-search-main">
                 <div class="hp-search-row">
@@ -102,8 +102,8 @@
                 <span class="eyebrow hp-showcase-label">Try a character</span>
                 <h2 id="hp-char-name">Loading...</h2>
                 <p class="hp-char-desc" id="hp-char-desc"></p>
-                <a class="btn btn-primary" id="hp-char-link" href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+                <a class="btn" id="hp-char-link" href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
                     Analyze
                 </a>
             </div>
@@ -175,10 +175,28 @@
     })();
 
     // ── Fetch character data and build everything ──
+    // ── UID Search icon — show Furina ──
+    (function () {
+        // Quick inline: show a small circle with the initial
+        var si = document.getElementById("hp-search-icon");
+        si.innerHTML = '<span class="hp-search-char">F</span>';
+        si.style.setProperty("--el-color", "#5B9BD6");
+    })();
+
     cachedFetch(API_BASE + "/characters", "characters").then(function (data) {
         if (!data || !data.characters) return;
         var chars = data.characters;
         _allCharsData = chars;
+
+        // ── Search icon: try loading Furina portrait ──
+        (function () {
+            var furina = chars.find(function (c) { return c.name === "Furina"; });
+            if (furina && furina.portrait) {
+                var si = document.getElementById("hp-search-icon");
+                si.innerHTML = portraitInnerHtml(furina);
+                si.className = "hp-search-avatar";
+            }
+        })();
 
         // ── Random Character Showcase ──
         (function () {
@@ -189,8 +207,10 @@
             var pick = picks[Math.floor(Math.random() * picks.length)];
 
             document.getElementById("hp-char-name").textContent = pick.name;
-            // Show a short description based on element
             var elem = (pick.element || "").toLowerCase();
+            var elemColors = { pyro:"#E0785C", hydro:"#5B9BD6", anemo:"#6BC7AE", electro:"#B18FE0", dendro:"#97BE58", cryo:"#83C6DE", geo:"#D6B96C" };
+            var ec = elemColors[elem] || "#5B9BD6";
+
             var descs = {
                 pyro: "Pyro DPS or support. Strong reaction-based damage dealer.",
                 hydro: "Hydro support or DPS. Enables reactions and heals.",
@@ -200,54 +220,60 @@
                 cryo: "Cryo DPS or support. Freeze and melt enabler.",
                 geo: "Geo construct DPS. DEF-scaling shields and damage.",
             };
-            document.getElementById("hp-char-desc").textContent = descs[elem] || pick.roles?.join(", ") || "See their best builds and rate your own.";
-            document.getElementById("hp-char-link").href = "analyze.html?character=" + encodeURIComponent(pick.name);
+            document.getElementById("hp-char-desc").textContent = descs[elem] || "See their best builds and rate your own.";
+            var link = document.getElementById("hp-char-link");
+            link.href = "analyze.html?character=" + encodeURIComponent(pick.name);
+            // Element-colored button
+            link.style.background = ec;
+            link.style.color = "#06121F";
+            link.style.border = "none";
 
             var showcase = document.getElementById("hp-showcase");
-            var ec = (function(e) {
-                return { pyro:"#E0785C", hydro:"#5B9BD6", anemo:"#6BC7AE", electro:"#B18FE0", dendro:"#97BE58", cryo:"#83C6DE", geo:"#D6B96C" }[elem] || "#5B9BD6";
-            })(elem);
             showcase.style.setProperty("--el-color", ec);
 
-            // Portrait
             var port = document.getElementById("hp-char-portrait");
             port.innerHTML = portraitInnerHtml(pick);
 
-            // Splash background
             var bg = document.getElementById("hp-showcase-bg");
             bg.style.backgroundImage = "url(" + pick.splash + ")";
         })();
 
-        // ── Quick Actions with character portraits ──
+        // ── Quick Actions with randomized CritCal-styled portraits ──
         (function () {
             var container = document.getElementById("hp-actions");
             if (!container) return;
 
-            // Pick fitting characters for each tool
-            var findChar = function (keys) {
-                var match = chars.find(function (c) { return keys.indexOf(c.name) !== -1; });
-                if (match) return match;
-                // Fallback: pick one from the element
-                var byEl = chars.filter(function (c) { return keys.indexOf(c.element) !== -1; });
-                return byEl.length > 0 ? byEl[Math.floor(Math.random() * byEl.length)] : chars[0];
-            };
+            function pickChar(names) {
+                var m = chars.find(function (c) { return names.indexOf(c.name) !== -1; });
+                return m || chars[Math.floor(Math.random() * chars.length)];
+            }
 
-            var manualChar = findChar(["Hu Tao", "Ayaka", "Xiao", "Ganyu", "Keqing"]);
-            var browseChar = findChar(["Venti", "Zhongli", "Nahida", "Kazuha", "Raiden Shogun"]);
-            var statsChar = findChar(["Bennett", "Xiangling", "Xingqiu", "Fischl", "Sucrose"]);
+            var pool = { dps: ["Hu Tao", "Ayaka", "Xiao", "Ganyu", "Keqing", "Alhaitham", "Wanderer"],
+                        archon: ["Venti", "Zhongli", "Nahida", "Kazuha", "Raiden Shogun", "Furina"],
+                        support: ["Bennett", "Xiangling", "Xingqiu", "Fischl", "Sucrose", "Kuki Shinobu"] };
+
+            var manualChar = pickChar(pool.dps);
+            var browseChar = pickChar(pool.archon);
+            var statsChar = pickChar(pool.support);
+
+            function critcalAvatar(character) {
+                var color = elementColor(character.element);
+                var avatarHtml = portraitInnerHtml(character);
+                return '<span class="crit-avatar" style="--el-color:' + color + '">' + avatarHtml + '</span>';
+            }
 
             container.innerHTML = [
                 '<a class="hp-action" href="analyze.html">',
-                    '<span class="hp-action-avatar" style="--el-color:' + elementColor(manualChar.element) + '">' + portraitInnerHtml(manualChar) + '</span>',
-                    '<span><strong>Manual Analyze</strong><span>Enter your own stats</span></span>',
+                    critcalAvatar(manualChar),
+                    '<span><strong>Manual Analyze</strong><span>Enter your own stats for a rating</span></span>',
                 '</a>',
                 '<a class="hp-action" href="characters.html">',
-                    '<span class="hp-action-avatar" style="--el-color:' + elementColor(browseChar.element) + '">' + portraitInnerHtml(browseChar) + '</span>',
+                    critcalAvatar(browseChar),
                     '<span><strong>Characters (<span id="char-count-home">' + (data.count || "120+") + '</span>)</strong><span>Browse all builds</span></span>',
                 '</a>',
                 '<a class="hp-action" href="uid-search.html">',
-                    '<span class="hp-action-avatar" style="--el-color:' + elementColor(statsChar.element) + '">' + portraitInnerHtml(statsChar) + '</span>',
-                    '<span><strong>UID Search</strong><span>Look up by UID</span></span>',
+                    critcalAvatar(statsChar),
+                    '<span><strong>UID Search</strong><span>Look up any showcase by UID</span></span>',
                 '</a>',
             ].join("");
         })();
