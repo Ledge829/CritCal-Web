@@ -103,7 +103,7 @@
                 <h2 id="hp-char-name">Loading...</h2>
                 <p class="hp-char-desc" id="hp-char-desc"></p>
                 <a class="btn" id="hp-char-link" href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+                    <span class="btn-char-icon" id="hp-char-btn-icon"></span>
                     Analyze
                 </a>
             </div>
@@ -223,10 +223,24 @@
             document.getElementById("hp-char-desc").textContent = descs[elem] || "See their best builds and rate your own.";
             var link = document.getElementById("hp-char-link");
             link.href = "analyze.html?character=" + encodeURIComponent(pick.name);
-            // Element-colored button
+            // Element-colored button with character portrait
             link.style.background = ec;
             link.style.color = "#06121F";
             link.style.border = "none";
+            link.style.display = "inline-flex";
+            link.style.alignItems = "center";
+            link.style.gap = "8px";
+            // Set button icon to character portrait
+            var btnIcon = document.getElementById("hp-char-btn-icon");
+            btnIcon.innerHTML = portraitInnerHtml(pick);
+            btnIcon.style.display = "inline-block";
+            btnIcon.style.width = "20px";
+            btnIcon.style.height = "20px";
+            btnIcon.style.borderRadius = "6px";
+            btnIcon.style.overflow = "hidden";
+            btnIcon.style.flexShrink = "0";
+            var btnImg = btnIcon.querySelector("img");
+            if (btnImg) { btnImg.style.width = "100%"; btnImg.style.height = "100%"; btnImg.style.objectFit = "cover"; }
 
             var showcase = document.getElementById("hp-showcase");
             showcase.style.setProperty("--el-color", ec);
@@ -244,13 +258,24 @@
             if (!container) return;
 
             function pickChar(names) {
-                var m = chars.find(function (c) { return names.indexOf(c.name) !== -1; });
-                return m || chars[Math.floor(Math.random() * chars.length)];
+                // Pick a RANDOM name from the list, then find it
+                var idx = Math.floor(Math.random() * names.length);
+                var m = chars.find(function (c) { return c.name === names[idx]; });
+                if (m) return m;
+                // Fallback: try another random name
+                for (var i = 0; i < 5; i++) {
+                    var n = names[Math.floor(Math.random() * names.length)];
+                    var f = chars.find(function (c) { return c.name === n; });
+                    if (f) return f;
+                }
+                return chars[Math.floor(Math.random() * chars.length)];
             }
 
-            var pool = { dps: ["Hu Tao", "Ayaka", "Xiao", "Ganyu", "Keqing", "Alhaitham", "Wanderer"],
-                        archon: ["Venti", "Zhongli", "Nahida", "Kazuha", "Raiden Shogun", "Furina"],
-                        support: ["Bennett", "Xiangling", "Xingqiu", "Fischl", "Sucrose", "Kuki Shinobu"] };
+            var pool = {
+                dps: ["Hu Tao", "Ayaka", "Xiao", "Ganyu", "Keqing", "Alhaitham", "Wanderer", "Diluc", "Itto", "Eula", "Cyno", "Lyney"],
+                archon: ["Venti", "Zhongli", "Nahida", "Kazuha", "Raiden Shogun", "Furina", "Navia", "Mavuika", "Xilonen"],
+                support: ["Bennett", "Xiangling", "Xingqiu", "Fischl", "Sucrose", "Kuki Shinobu", "Diona", "Layla", "Faruzan", "Gorou", "Sara"]
+            };
 
             var manualChar = pickChar(pool.dps);
             var browseChar = pickChar(pool.archon);
