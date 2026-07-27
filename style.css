@@ -701,6 +701,25 @@ footer a:hover { color: var(--primary); }
 
 .hp-action-icon svg { width: 16px; height: 16px; }
 
+.hp-action-avatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--card);
+    border: 1px solid color-mix(in srgb, var(--el-color, var(--primary)) 30%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hp-action-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .hp-action strong {
     display: block;
     font-size: 13.5px;
@@ -710,6 +729,15 @@ footer a:hover { color: var(--primary); }
 .hp-action span {
     font-size: 11.5px;
     color: var(--text-dim);
+}
+
+.hp-history-label {
+    font-size: 10.5px;
+    color: var(--text-faint);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    margin-right: 2px;
 }
 
 @media (max-width: 640px) {
