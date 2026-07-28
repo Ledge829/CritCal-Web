@@ -211,9 +211,10 @@
             var pick = picks[Math.floor(Math.random() * picks.length)];
 
             document.getElementById("hp-char-name").textContent = pick.name;
-            var elem = (pick.element || "").toLowerCase();
-            var elemColors = { pyro:"#E0785C", hydro:"#5B9BD6", anemo:"#6BC7AE", electro:"#B18FE0", dendro:"#97BE58", cryo:"#83C6DE", geo:"#D6B96C" };
-            var ec = elemColors[elem] || "#5B9BD6";
+            // Use character theme color if available, fall back to element color
+            var ec = (pick.theme && pick.theme.primary) || (function(e) {
+                return { pyro:"#E0785C", hydro:"#5B9BD6", anemo:"#6BC7AE", electro:"#B18FE0", dendro:"#97BE58", cryo:"#83C6DE", geo:"#D6B96C" }[(pick.element||"").toLowerCase()] || "#5B9BD6";
+            })();
 
             var descs = {
                 pyro: "Pyro DPS or support. Strong reaction-based damage dealer.",
@@ -320,7 +321,7 @@
             var f = activeEl ? allChars.filter(function (c) { return c.element === activeEl; }) : allChars;
             if (!f.length) { grid.innerHTML = '<div class="home-char-loading">No characters match.</div>'; return; }
             grid.innerHTML = f.slice(0, 24).map(function (c) {
-                var color = (function(e) { return { pyro:"#E0785C", hydro:"#5B9BD6", anemo:"#6BC7AE", electro:"#B18FE0", dendro:"#97BE58", cryo:"#83C6DE", geo:"#D6B96C" }[e] || "#5B9BD6"; })(c.element);
+                var color = (c.theme && c.theme.primary) || (function(e) { return { pyro:"#E0785C", hydro:"#5B9BD6", anemo:"#6BC7AE", electro:"#B18FE0", dendro:"#97BE58", cryo:"#83C6DE", geo:"#D6B96C" }[e] || "#5B9BD6"; })(c.element);
                 return '<a class="home-char-tile" href="analyze.html?character=' + encodeURIComponent(c.name) + '" style="--el-color:' + color + '">' +
                     '<span class="home-char-tile-avatar" style="--el-color:' + color + '">' + portraitInnerHtml(c) + '</span>' +
                     '<span class="home-char-tile-name">' + escapeHtml(c.name) + '</span></a>';

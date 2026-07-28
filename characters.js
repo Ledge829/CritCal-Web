@@ -60,7 +60,7 @@ function render() {
 }
 
 function characterCardHtml(c) {
-    const color = elementColor(c.element);
+    const color = (c.theme && c.theme.primary) || elementColor(c.element);
     const roles = (c.roles || []).join(" · ");
 
     return `
