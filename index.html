@@ -184,13 +184,15 @@
 
     // Fallback character if API fetch fails
     function showFallbackChar() {
-        document.getElementById("hp-char-name").textContent = "Furina";
+        var fb = { name:"Furina", element:"hydro", rarity:5, key:"furina" };
+        document.getElementById("hp-char-name").textContent = fb.name;
         document.getElementById("hp-char-desc").textContent = "Universal buffer, off-field Hydro DMG.";
         document.getElementById("hp-char-link").href = "analyze.html?character=Furina";
+        document.getElementById("hp-char-portrait").innerHTML = portraitInnerHtml(fb);
     }
 
     cachedFetch(API_BASE + "/characters", "characters").then(function (data) {
-        if (!data || !data.characters) return;
+        if (!data || !data.characters) { showFallbackChar(); return; }
         var chars = data.characters;
         _allCharsData = chars;
 
