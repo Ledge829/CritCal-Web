@@ -88,25 +88,21 @@
     </section>
 
     <!-- ════════════════════════════════════════════ -->
-    <!-- RANDOM CHARACTER SHOWCASE                    -->
+    <!-- UID PROFILE BARS — recent lookups            -->
     <!-- ════════════════════════════════════════════ -->
 
-    <section class="hp-showcase fade-up fade-up-1" id="hp-showcase">
-        <div class="hp-showcase-bg" id="hp-showcase-bg"></div>
-        <div class="hp-showcase-overlay"></div>
-        <div class="hp-showcase-content">
-            <div class="hp-showcase-info">
-                <span class="eyebrow hp-showcase-label">Try a character</span>
-                <h2 id="hp-char-name">Loading...</h2>
-                <p class="hp-char-desc" id="hp-char-desc"></p>
-                <a class="btn" id="hp-char-link" href="#">
-                    <span class="btn-char-icon" id="hp-char-btn-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
-                    </span>
-                    Analyze
-                </a>
-            </div>
-            <div class="hp-showcase-portrait" id="hp-char-portrait"></div>
+    <div class="hp-bars fade-up fade-up-1" id="hp-uid-bars"></div>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- NEWS — latest Genshin headlines              -->
+    <!-- ════════════════════════════════════════════ -->
+
+    <section class="hp-news fade-up fade-up-1" id="hp-news">
+        <div class="hp-news-header">
+            <span class="eyebrow">Latest News</span>
+        </div>
+        <div id="hp-news-list">
+            <div class="hp-news-loading">Loading news...</div>
         </div>
     </section>
 
@@ -182,15 +178,6 @@
         si.style.setProperty("--el-color", "#5B9BD6");
     })();
 
-    // Fallback character if API fetch fails
-    function showFallbackChar() {
-        document.getElementById("hp-char-name").textContent = "Furina";
-        document.getElementById("hp-char-desc").textContent = "Universal buffer, off-field Hydro DMG.";
-        document.getElementById("hp-char-link").href = "analyze.html?character=Furina";
-        // Simple initial-letter fallback (no image needed)
-        document.getElementById("hp-char-portrait").innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:28px;font-weight:700;color:#5B9BD6;background:var(--card);">F</span>';
-    }
-
     cachedFetch(API_BASE + "/characters", "characters").then(function (data) {
         if (!data || !data.characters) { showFallbackChar(); return; }
         var chars = data.characters;
@@ -206,59 +193,64 @@
             }
         })();
 
-        // ── Random Character Showcase ──
+        // ── UID Profile Bars ──
         (function () {
-            var picks = chars.filter(function (c) { return c.portrait && c.splash; });
-            if (picks.length === 0) { showFallbackChar(); return; }
-            var pick = picks[Math.floor(Math.random() * picks.length)];
-
-            document.getElementById("hp-char-name").textContent = pick.name;
-            // Use character theme color if available, fall back to element color
-            var ec = (pick.theme && pick.theme.primary) || (function(e) {
-                return { pyro:"#E0785C", hydro:"#5B9BD6", anemo:"#6BC7AE", electro:"#B18FE0", dendro:"#97BE58", cryo:"#83C6DE", geo:"#D6B96C" }[(pick.element||"").toLowerCase()] || "#5B9BD6";
-            })();
-
-            var descs = {
-                pyro: "Pyro DPS or support. Strong reaction-based damage dealer.",
-                hydro: "Hydro support or DPS. Enables reactions and heals.",
-                anemo: "Anemo crowd control. Swirls elements and buffs the team.",
-                electro: "Electro DPS or battery. Energy generation and reactions.",
-                dendro: "Dendro enabler. Bloom, Quicken, and reaction damage.",
-                cryo: "Cryo DPS or support. Freeze and melt enabler.",
-                geo: "Geo construct DPS. DEF-scaling shields and damage.",
-            };
-            document.getElementById("hp-char-desc").textContent = descs[elem] || "See their best builds and rate your own.";
-            var link = document.getElementById("hp-char-link");
-            link.href = "analyze.html?character=" + encodeURIComponent(pick.name);
-            // Element-colored button
-            link.style.background = ec;
-            link.style.color = "#06121F";
-            link.style.border = "none";
-            link.style.display = "inline-flex";
-            link.style.alignItems = "center";
-            link.style.gap = "8px";
-            // Keep the original analyze icon, no portrait overlay
-            var btnIcon = document.getElementById("hp-char-btn-icon");
-            if (btnIcon) {
-                btnIcon.style.display = "inline-flex";
-                btnIcon.style.alignItems = "center";
-                btnIcon.style.justifyContent = "center";
-                // Remove any child overlays
-                var children = btnIcon.children;
-                for (var ci = children.length - 1; ci >= 0; ci--) {
-                    if (children[ci].tagName !== "svg") btnIcon.removeChild(children[ci]);
+            var barContainer = document.getElementById("hp-uid-bars");
+            if (!barContainer) return;
+            try {
+                var uids = JSON.parse(localStorage.getItem("critcal_uid_history")) || [];
+                if (uids.length > 0) {
+                    bars = uids.slice(0, 3).map(function (uid) {
+                        return '<a class="hp-uid-bar" href="uid-search.html?uid=' + encodeURIComponent(uid) + '">' +
+                            '<span class="hp-uid-bar-icon">#</span>' +
+                            '<span class="hp-uid-bar-text">' + escapeHtml(uid) + '</span>' +
+                            '<span class="hp-uid-bar-arrow">→</span>' +
+                        '</a>';
+                    }).join("");
+                    barContainer.innerHTML = '<div class="hp-uid-bar-label">Recent UIDs</div>' + bars;
+                    barContainer.classList.add("is-visible");
                 }
-            }
+            } catch (_) {}
+        })();
 
-            var showcase = document.getElementById("hp-showcase");
-            showcase.style.setProperty("--el-color", ec);
+        // ── News ──
+        (function () {
+            var newsEl = document.getElementById("hp-news-list");
+            if (!newsEl) return;
 
-            var port = document.getElementById("hp-char-portrait");
-            // Direct image — no portraitInnerHtml wrapper
-            port.innerHTML = '<img src="' + (pick.portrait || '') + '" alt="' + escapeHtml(pick.name) + '" style="width:100%;height:100%;object-fit:cover;display:block;">';
-
-            var bg = document.getElementById("hp-showcase-bg");
-            bg.style.backgroundImage = "url(" + pick.splash + ")";
+            // Try fetching from API
+            var newsUrl = API_BASE + "/news";
+            fetch(newsUrl, { headers: { "Accept": "application/json" } })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var items = (data && data.news) || [];
+                    if (items.length === 0) {
+                        newsEl.innerHTML = '<div class="hp-news-empty">No news yet.</div>';
+                        return;
+                    }
+                    // Show top 1-2 items
+                    var html = '';
+                    for (var ni = 0; ni < Math.min(items.length, 2); ni++) {
+                        var n = items[ni];
+                        html += '<div class="hp-news-item">';
+                        if (n.image) {
+                            html += '<div class="hp-news-img-wrap"><img class="hp-news-img" src="' + escapeHtml(n.image) + '" alt="" loading="lazy"></div>';
+                        }
+                        html += '<div class="hp-news-body">';
+                        html += '<h3 class="hp-news-title">' + escapeHtml(n.title) + '</h3>';
+                        if (n.summary) {
+                            html += '<p class="hp-news-summary">' + escapeHtml(n.summary.substring(0, 120)) + '</p>';
+                        }
+                        if (n.url) {
+                            html += '<a class="hp-news-link" href="' + escapeHtml(n.url) + '" target="_blank" rel="noopener">Read more →</a>';
+                        }
+                        html += '</div></div>';
+                    }
+                    newsEl.innerHTML = html;
+                })
+                .catch(function () {
+                    newsEl.innerHTML = '<div class="hp-news-empty">News unavailable.</div>';
+                });
         })();
 
         // ── Quick Actions with randomized CritCal-styled portraits ──
