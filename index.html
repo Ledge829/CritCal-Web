@@ -69,29 +69,25 @@
 <main id="main-content">
 
     <!-- ════════════════════════════════════════════ -->
-    <!-- UID SEARCH                                    -->
+    <!-- UID SEARCH + RECENT PROFILES                 -->
     <!-- ════════════════════════════════════════════ -->
 
     <section class="hp-hero fade-up">
-        <div class="hp-hero-inner">
-            <div class="hp-search-icon" id="hp-search-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            </div>
-            <div class="hp-search-main">
-                <div class="hp-search-row">
-                    <input type="text" id="uid-input-home" placeholder="Enter a UID to rate any showcase..." inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Player UID">
-                    <button class="btn btn-primary" id="uid-search-home-btn">Search</button>
+        <div class="hp-hero-top">
+            <div class="hp-hero-inner">
+                <div class="hp-search-icon" id="hp-search-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 </div>
-                <div id="uid-history-home" class="hp-history"></div>
+                <div class="hp-search-main">
+                    <div class="hp-search-row">
+                        <input type="text" id="uid-input-home" placeholder="Enter a UID to rate any showcase..." inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Player UID">
+                        <button class="btn btn-primary" id="uid-search-home-btn">Search</button>
+                    </div>
+                </div>
             </div>
+            <div class="hp-recent fade-up fade-up-1" id="hp-recent" aria-label="Recent profiles"></div>
         </div>
     </section>
-
-    <!-- ════════════════════════════════════════════ -->
-    <!-- UID PROFILE BARS — recent lookups            -->
-    <!-- ════════════════════════════════════════════ -->
-
-    <div class="hp-bars fade-up fade-up-1" id="hp-uid-bars"></div>
 
     <!-- ════════════════════════════════════════════ -->
     <!-- NEWS — latest Genshin headlines              -->
@@ -193,22 +189,21 @@
             }
         })();
 
-        // ── UID Profile Bars ──
+        // ── Recent UID Profiles ──
         (function () {
-            var barContainer = document.getElementById("hp-uid-bars");
-            if (!barContainer) return;
+            var container = document.getElementById("hp-recent");
+            if (!container) return;
             try {
                 var uids = JSON.parse(localStorage.getItem("critcal_uid_history")) || [];
-                if (uids.length > 0) {
-                    bars = uids.slice(0, 3).map(function (uid) {
-                        return '<a class="hp-uid-bar" href="uid-search.html?uid=' + encodeURIComponent(uid) + '">' +
-                            '<span class="hp-uid-bar-icon">#</span>' +
-                            '<span class="hp-uid-bar-text">' + escapeHtml(uid) + '</span>' +
-                            '<span class="hp-uid-bar-arrow">→</span>' +
+                var recent = uids.slice(0, 3);
+                if (recent.length > 0) {
+                    var bars = recent.map(function (uid) {
+                        return '<a class="hp-profile-bar" href="uid-search.html?uid=' + encodeURIComponent(uid) + '">' +
+                            '<span class="hp-profile-icon">' + uid.charAt(0) + '</span>' +
+                            '<span class="hp-profile-num">' + escapeHtml(uid) + '</span>' +
                         '</a>';
                     }).join("");
-                    barContainer.innerHTML = '<div class="hp-uid-bar-label">Recent UIDs</div>' + bars;
-                    barContainer.classList.add("is-visible");
+                    container.innerHTML = bars;
                 }
             } catch (_) {}
         })();
@@ -218,9 +213,7 @@
             var newsEl = document.getElementById("hp-news-list");
             if (!newsEl) return;
 
-            // Try fetching from API
-            var newsUrl = API_BASE + "/news";
-            fetch(newsUrl, { headers: { "Accept": "application/json" } })
+            fetch(API_BASE + "/news", { headers: { "Accept": "application/json" } })
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
                     var items = (data && data.news) || [];
@@ -228,7 +221,6 @@
                         newsEl.innerHTML = '<div class="hp-news-empty">No news yet.</div>';
                         return;
                     }
-                    // Show top 1-2 items
                     var html = '';
                     for (var ni = 0; ni < Math.min(items.length, 2); ni++) {
                         var n = items[ni];

@@ -631,72 +631,57 @@ footer a:hover { color: var(--primary); }
 }
 
 /* ========================================================== */
-/* UID PROFILE BARS                                           */
+/* RECENT UID PROFILES                                        */
 /* ========================================================== */
 
-.hp-bars {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 12px 6% 0;
-    display: none;
-}
-
-.hp-bars.is-visible { display: block; }
-
-.hp-uid-bar-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    color: var(--text-faint);
-    margin-bottom: 6px;
-}
-
-.hp-uid-bar {
+.hp-hero-top {
     display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hp-recent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.hp-profile-bar {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
+    gap: 6px;
+    padding: 6px 12px 6px 6px;
     background: var(--surface);
     border: 1px solid var(--border-soft);
-    border-radius: var(--r-md);
+    border-radius: var(--r-full);
     text-decoration: none;
     color: var(--text);
-    margin-bottom: 5px;
     transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+    font-size: 12px;
 }
 
-.hp-uid-bar:hover {
-    border-color: var(--border-hover);
-    background: var(--surface-hover);
+.hp-profile-bar:hover {
+    border-color: var(--primary);
+    background: var(--primary-dim);
 }
 
-.hp-uid-bar:last-child { margin-bottom: 0; }
-
-.hp-uid-bar-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+.hp-profile-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
     background: var(--primary-dim);
     color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     flex-shrink: 0;
 }
 
-.hp-uid-bar-text {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 500;
+.hp-profile-num {
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
-}
-
-.hp-uid-bar-arrow {
-    color: var(--text-faint);
-    font-size: 14px;
 }
 
 /* ========================================================== */
@@ -975,6 +960,7 @@ footer a:hover { color: var(--primary); }
 @media (max-width: 640px) {
     .hp-hero { padding-top: 16px; }
     .hp-hero-inner { flex-direction: column; gap: 12px; padding: 18px; }
+    .hp-recent { justify-content: center; }
     .hp-search-icon { width: 36px; height: 36px; }
     .hp-search-icon svg { width: 16px; height: 16px; }
     .hp-search-row { flex-direction: column; gap: 6px; }
