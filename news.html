@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News — CritCal</title>
+    <meta name="description" content="Latest Genshin Impact news and CritCal updates.">
+    <link rel="canonical" href="https://critcal.vercel.app/news.html">
+    <meta name="theme-color" content="#0A0D13">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<header class="navbar">
+    <a class="logo" href="index.html">
+        <span class="logo-mark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+        </span>
+        CritCal
+    </a>
+    <div class="nav-profiles" id="nav-profiles"></div>
+    <nav class="desktop-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="characters.html">Characters</a>
+        <a href="uid-search.html">UID Search</a>
+        <a href="analyze.html">Analyze</a>
+        <a href="news.html" class="active" aria-current="page">News</a>
+        <a href="about.html">About</a>
+    </nav>
+    <button class="menu-button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+        <svg class="menu-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg class="menu-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+</header>
+
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
+    <a href="index.html">Home</a>
+    <a href="characters.html">Characters</a>
+    <a href="uid-search.html">UID Search</a>
+    <a href="analyze.html">Analyze</a>
+    <a href="news.html" class="active" aria-current="page">News</a>
+    <a href="about.html">About</a>
+</nav>
+
+<main class="news-page" id="main-content">
+    <section class="page-heading fade-up">
+        <p class="eyebrow">Updates</p>
+        <h1>News</h1>
+        <p class="subtitle">Latest Genshin Impact updates and CritCal changelog.</p>
+    </section>
+
+    <div class="news-list fade-up fade-up-1" id="news-list">
+        <div class="news-loading">Loading news...</div>
+    </div>
+</main>
+
+<footer>
+    CritCal · Open Source · Built by and for the community
+    <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="characters.html">Characters</a>
+        <a href="uid-search.html">UID Search</a>
+        <a href="analyze.html">Analyze</a>
+        <a href="news.html">News</a>
+        <a href="about.html">About</a>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+    var newsList = document.getElementById("news-list");
+    if (newsList) {
+        fetch(API_BASE + "/news", { headers: { "Accept": "application/json" } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var items = (data && data.news) || [];
+                if (items.length === 0) {
+                    newsList.innerHTML = '<div class="news-empty">No news yet.</div>';
+                    return;
+                }
+                var html = '';
+                for (var i = 0; i < items.length; i++) {
+                    var n = items[i];
+                    var src = n.source === "hoyolab" ? "Hoyolab" : "CritCal";
+                    html += '<article class="news-card">';
+                    if (n.image) {
+                        html += '<div class="news-card-img"><img src="' + escapeHtml(n.image) + '" alt="" loading="lazy"></div>';
+                    }
+                    html += '<div class="news-card-body">';
+                    html += '<span class="news-card-source">' + src + '</span>';
+                    html += '<h2 class="news-card-title">' + escapeHtml(n.title) + '</h2>';
+                    if (n.summary) {
+                        html += '<p class="news-card-summary">' + escapeHtml(n.summary) + '</p>';
+                    }
+                    if (n.url) {
+                        html += '<a class="news-card-link" href="' + escapeHtml(n.url) + '" target="_blank" rel="noopener">Read full article →</a>';
+                    }
+                    html += '</div></article>';
+                }
+                newsList.innerHTML = html;
+            })
+            .catch(function () {
+                newsList.innerHTML = '<div class="news-empty">Could not load news. The server may be waking up.</div>';
+            });
+    }
+</script>
+</body>
+</html>

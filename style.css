@@ -784,6 +784,98 @@ footer a:hover { color: var(--primary); }
 }
 
 /* ========================================================== */
+/* DEDICATED NEWS PAGE                                        */
+/* ========================================================== */
+
+.news-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 6% 80px;
+}
+
+.news-list {
+    margin-top: 24px;
+}
+
+.news-loading,
+.news-empty {
+    color: var(--text-faint);
+    font-size: 14px;
+    padding: 40px 0;
+    text-align: center;
+}
+
+.news-card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    margin-bottom: 14px;
+    transition: border-color var(--med) var(--ease), box-shadow var(--med) var(--ease);
+}
+
+.news-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.news-card-img {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: var(--card);
+}
+
+.news-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.news-card-body {
+    padding: 22px;
+}
+
+.news-card-source {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+}
+
+.news-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.news-card-summary {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
+
+.news-card-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.news-card-link:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+    .news-card-img { height: 140px; }
+    .news-card-body { padding: 16px; }
+    .news-card-title { font-size: 16px; }
+}
+
+/* ========================================================== */
 /* HOMEPAGE — CHARACTER SHOWCASE                              */
 /* ========================================================== */
 
