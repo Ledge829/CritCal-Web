@@ -184,11 +184,11 @@
 
     // Fallback character if API fetch fails
     function showFallbackChar() {
-        var fb = { name:"Furina", element:"hydro", rarity:5, key:"furina" };
-        document.getElementById("hp-char-name").textContent = fb.name;
+        document.getElementById("hp-char-name").textContent = "Furina";
         document.getElementById("hp-char-desc").textContent = "Universal buffer, off-field Hydro DMG.";
         document.getElementById("hp-char-link").href = "analyze.html?character=Furina";
-        document.getElementById("hp-char-portrait").innerHTML = portraitInnerHtml(fb);
+        // Simple initial-letter fallback (no image needed)
+        document.getElementById("hp-char-portrait").innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:28px;font-weight:700;color:#5B9BD6;background:var(--card);">F</span>';
     }
 
     cachedFetch(API_BASE + "/characters", "characters").then(function (data) {
