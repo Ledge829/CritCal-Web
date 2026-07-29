@@ -254,7 +254,8 @@
             showcase.style.setProperty("--el-color", ec);
 
             var port = document.getElementById("hp-char-portrait");
-            port.innerHTML = portraitInnerHtml(pick);
+            // Direct image — no portraitInnerHtml wrapper
+            port.innerHTML = '<img src="' + (pick.portrait || '') + '" alt="' + escapeHtml(pick.name) + '" style="width:100%;height:100%;object-fit:cover;display:block;">';
 
             var bg = document.getElementById("hp-showcase-bg");
             bg.style.backgroundImage = "url(" + pick.splash + ")";
