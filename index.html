@@ -69,25 +69,28 @@
 <main id="main-content">
 
     <!-- ════════════════════════════════════════════ -->
-    <!-- UID SEARCH + RECENT PROFILES                 -->
+    <!-- UID SEARCH                                     -->
     <!-- ════════════════════════════════════════════ -->
 
     <section class="hp-hero fade-up">
-        <div class="hp-hero-top">
-            <div class="hp-hero-inner">
-                <div class="hp-search-icon" id="hp-search-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                </div>
-                <div class="hp-search-main">
-                    <div class="hp-search-row">
-                        <input type="text" id="uid-input-home" placeholder="Enter a UID to rate any showcase..." inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Player UID">
-                        <button class="btn btn-primary" id="uid-search-home-btn">Search</button>
-                    </div>
+        <div class="hp-hero-inner">
+            <div class="hp-search-icon" id="hp-search-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </div>
+            <div class="hp-search-main">
+                <div class="hp-search-row">
+                    <input type="text" id="uid-input-home" placeholder="Enter a UID to rate any showcase..." inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Player UID">
+                    <button class="btn btn-primary" id="uid-search-home-btn">Search</button>
                 </div>
             </div>
-            <div class="hp-recent fade-up fade-up-1" id="hp-recent" aria-label="Recent profiles"></div>
         </div>
     </section>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- RECENT PROFILES — account bars with portraits -->
+    <!-- ════════════════════════════════════════════ -->
+
+    <div class="hp-profiles fade-up fade-up-1" id="hp-profiles"></div>
 
     <!-- ════════════════════════════════════════════ -->
     <!-- NEWS — latest Genshin headlines              -->
@@ -189,22 +192,49 @@
             }
         })();
 
-        // ── Recent UID Profiles ──
+        // ── Recent UID Profiles (with account portraits) ──
         (function () {
-            var container = document.getElementById("hp-recent");
+            var container = document.getElementById("hp-profiles");
             if (!container) return;
             try {
                 var uids = JSON.parse(localStorage.getItem("critcal_uid_history")) || [];
                 var recent = uids.slice(0, 3);
-                if (recent.length > 0) {
-                    var bars = recent.map(function (uid) {
-                        return '<a class="hp-profile-bar" href="uid-search.html?uid=' + encodeURIComponent(uid) + '">' +
-                            '<span class="hp-profile-icon">' + uid.charAt(0) + '</span>' +
-                            '<span class="hp-profile-num">' + escapeHtml(uid) + '</span>' +
-                        '</a>';
-                    }).join("");
-                    container.innerHTML = bars;
-                }
+                if (recent.length === 0) return;
+
+                // Try to load cached portraits
+                var cached;
+                try { cached = JSON.parse(localStorage.getItem("critcal_uid_portraits") || "{}"); } catch(e) { cached = {}; }
+
+                var bars = recent.map(function (uid) {
+                    var img = cached[uid] || "";
+                    var avatar = img ? '<img src="' + img + '" alt="" class="hp-prof-avatar-img">' : '<span class="hp-prof-avatar-letter">' + uid.charAt(0) + '</span>';
+                    return '<a class="hp-prof-bar" href="uid-search.html?uid=' + encodeURIComponent(uid) + '">' +
+                        '<span class="hp-prof-avatar">' + avatar + '</span>' +
+                        '<span class="hp-prof-uid">' + escapeHtml(uid) + '</span>' +
+                    '</a>';
+                }).join("");
+                container.innerHTML = bars;
+
+                // Fetch portraits in background for uncached UIDs
+                recent.forEach(function (uid) {
+                    if (cached[uid]) return;
+                    fetch(API_BASE + "/uid/" + encodeURIComponent(uid) + "/showcase")
+                        .then(function (r) { return r.json(); })
+                        .then(function (d) {
+                            if (!d || !d.characters || d.characters.length === 0) return;
+                            var first = d.characters[0];
+                            if (!first || !first.portrait) return;
+                            cached[uid] = first.portrait;
+                            try { localStorage.setItem("critcal_uid_portraits", JSON.stringify(cached)); } catch(e) {}
+                            // Update the bar
+                            var bar = container.querySelector('[href*="' + uid + '"]');
+                            if (bar) {
+                                var av = bar.querySelector(".hp-prof-avatar");
+                                if (av) av.innerHTML = '<img src="' + first.portrait + '" alt="" class="hp-prof-avatar-img">';
+                            }
+                        })
+                        .catch(function () {});
+                });
             } catch (_) {}
         })();
 
