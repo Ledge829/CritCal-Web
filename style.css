@@ -638,10 +638,12 @@ footer a:hover { color: var(--primary); }
     display: flex;
     align-items: center;
     gap: 4px;
-    margin-left: 8px;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+    .nav-profiles { display: none; }
 }
 
 .nav-prof-chip {
