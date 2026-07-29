@@ -635,7 +635,7 @@ footer a:hover { color: var(--primary); }
 /* ========================================================== */
 
 .nav-profiles {
-    display: none;
+    display: flex;
     align-items: center;
     gap: 4px;
     margin-left: 8px;
@@ -688,8 +688,8 @@ footer a:hover { color: var(--primary); }
     font-variant-numeric: tabular-nums;
 }
 
-@media (min-width: 640px) {
-    .nav-profiles { display: flex; }
+@media (max-width: 480px) {
+    .nav-profiles { display: none; }
 }
 
 /* ========================================================== */
